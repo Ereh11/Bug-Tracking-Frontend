@@ -1,0 +1,73 @@
+<!-- signup.component.html -->
+<div class="min-h-screen flex items-center justify-center bg-screen">
+  <div
+    class="relative min-h-[32rem] max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
+    [class.opacity-0]="!isEntering || isLeaving"
+    [class.scale-90]="!isEntering || isLeaving"
+  >
+    <h2 class="text-2xl font-bold text-center text-purple-0">
+      Create your account
+    </h2>
+    <form
+      [formGroup]="signupForm"
+      (ngSubmit)="leaveAndNavigate('/login')"
+      class="flex flex-col gap-5"
+    >
+      <ng-container *ngFor="let ctrl of controls">
+        <div class="relative">
+          <label class="block text-sm font-medium text-gray-700">{{
+            ctrl.label
+          }}</label>
+          <div class="relative mt-1 rounded-md overflow-hidden">
+            <input
+              [type]="ctrl.type"
+              [formControlName]="ctrl.name"
+              class="w-full pl-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
+              [placeholder]="ctrl.placeholder"
+            />
+
+            <span class="pointer-events-none absolute inset-0">
+              <span
+                class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
+              ></span>
+            </span>
+          </div>
+
+          <!-- Error messages -->
+          <div
+            *ngIf="
+              signupForm.get(ctrl.name)?.touched &&
+              signupForm.get(ctrl.name)?.invalid
+            "
+            class="mt-1 space-y-1 text-sm text-error"
+          >
+            <div
+              *ngFor="let err of getErrors(ctrl.name)"
+              class="flex items-center gap-1"
+            >
+              <i class="fa-solid fa-circle-exclamation text-error"></i>
+              <span>{{ err }}</span>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <button
+        type="submit"
+        [disabled]="signupForm.invalid"
+        class="w-full pl-1 py-2 px-4 bg-gradient-to-b from-purple-4 to-purple-5 text-white font-semibold rounded-lg shadow-md disabled:opacity-50 transition"
+      >
+        Sign Up
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-500">
+      Already have an account?
+      <a
+        (click)="leaveAndNavigate('/login')"
+        class="text-purple-1 cursor-pointer hover:underline"
+        >Log in</a
+      >
+    </p>
+  </div>
+</div>
