@@ -1,66 +1,67 @@
 <div class="min-h-screen flex items-center justify-center bg-screen">
   <div
-    class="min-h-[32rem] max-w-md w-full bg-white rounded-2xl shadow-xl p-8 flex flex-col transition-all duration-500 ease-in-out"
+    class="relative min-h-[30rem] flex flex-col gap-5 max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
     [class.opacity-0]="!isEntering || isLeaving"
     [class.scale-90]="!isEntering || isLeaving"
   >
-    <h2 class="text-2xl font-bold text-center text-purple-0">Welcome back</h2>
+    <h2 class="text-2xl font-bold text-center text-purple-0 mb-10">
+      Welcome back
+    </h2>
 
-    <div class="flex-1 flex flex-col justify-center">
-      <form
-        [formGroup]="signInForm"
-        (ngSubmit)="onSubmit()"
-        class="flex flex-col gap-12"
-      >
-        <ng-container *ngFor="let ctrl of controls">
-          <div class="relative">
-            <label class="block text-sm font-medium text-gray-700">
-              {{ ctrl.label }}
-            </label>
-            <div class="relative mt-1 rounded-md overflow-hidden">
-              <input
-                [type]="ctrl.type"
-                [formControlName]="ctrl.name"
-                class="w-full pl-2 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
-                [placeholder]="ctrl.placeholder"
-              />
+    <form
+      [formGroup]="signInForm"
+      (ngSubmit)="onSubmit()"
+      class="flex justify-between h-[80%] flex-col gap-10 mt-10"
+    >
+      <ng-container *ngFor="let ctrl of controls">
+        <div class="relative">
+          <label class="block text-sm font-medium text-gray-700">
+            {{ ctrl.label }}
+          </label>
+          <div class="relative mt-1 rounded-md overflow-hidden">
+            <input
+              [type]="ctrl.type"
+              [formControlName]="ctrl.name"
+              class="w-full pl-2 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
+              [placeholder]="ctrl.placeholder"
+            />
 
-              <!-- sweep effect overlay -->
-              <span class="pointer-events-none absolute inset-0">
-                <span
-                  class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
-                ></span>
-              </span>
-            </div>
+            <!-- sweep effect overlay -->
+            <span class="pointer-events-none absolute inset-0">
+              <span
+                class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
+              ></span>
+            </span>
+          </div>
 
-            <!-- Field validation errors -->
-            <div
-              *ngIf="
+          <!-- Field validation errors -->
+          <div
+            class="mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
+            [class.opacity-0]="
+              !(
                 signInForm.get(ctrl.name)?.touched &&
                 signInForm.get(ctrl.name)?.invalid
-              "
-              class="mt-1 space-y-1 text-sm text-error"
+              )
+            "
+          >
+            <div
+              *ngFor="let err of getErrors(ctrl.name)"
+              class="flex items-center gap-1"
             >
-              <div
-                *ngFor="let err of getErrors(ctrl.name)"
-                class="flex items-center gap-1"
-              >
-                <i class="fa-solid fa-circle-exclamation text-error"></i>
-                <span>{{ err }}</span>
-              </div>
+              <i class="fa-solid fa-circle-exclamation text-error"></i>
+              <span>{{ err }}</span>
             </div>
           </div>
-        </ng-container>
-
-        <!-- Server / credential error -->
-        <div
-          *ngIf="authError"
-          class="text-error text-sm flex items-center gap-1"
-        >
-          <i class="fa-solid fa-circle-exclamation"></i>
-          <span>{{ authError }}</span>
         </div>
+      </ng-container>
 
+      <!-- Server / credential error -->
+      <div *ngIf="authError" class="text-error text-sm flex items-center gap-1">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>{{ authError }}</span>
+      </div>
+
+      <div class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <input
@@ -87,8 +88,8 @@
         >
           Sign In
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
 
     <p class="text-center text-sm text-gray-500">
       Don’t have an account?

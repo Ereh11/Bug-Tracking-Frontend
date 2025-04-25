@@ -1,7 +1,7 @@
 <!-- signup.component.html -->
 <div class="min-h-screen flex items-center justify-center bg-screen">
   <div
-    class="relative min-h-[32rem] max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
+    class="relative max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
     [class.opacity-0]="!isEntering || isLeaving"
     [class.scale-90]="!isEntering || isLeaving"
   >
@@ -11,7 +11,7 @@
     <form
       [formGroup]="signupForm"
       (ngSubmit)="leaveAndNavigate('/login')"
-      class="flex flex-col gap-5"
+      class="flex flex-col gap-2"
     >
       <ng-container *ngFor="let ctrl of controls">
         <div class="relative">
@@ -22,7 +22,7 @@
             <input
               [type]="ctrl.type"
               [formControlName]="ctrl.name"
-              class="w-full pl-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
+              class="w-full pl-1 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
               [placeholder]="ctrl.placeholder"
             />
 
@@ -35,11 +35,13 @@
 
           <!-- Error messages -->
           <div
-            *ngIf="
-              signupForm.get(ctrl.name)?.touched &&
-              signupForm.get(ctrl.name)?.invalid
+            class="mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
+            [class.opacity-0]="
+              !(
+                signupForm.get(ctrl.name)?.touched &&
+                signupForm.get(ctrl.name)?.invalid
+              )
             "
-            class="mt-1 space-y-1 text-sm text-error"
           >
             <div
               *ngFor="let err of getErrors(ctrl.name)"
