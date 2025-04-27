@@ -42,28 +42,26 @@
       >
         <ng-container *ngFor="let ctrl of controls">
           <div class="relative">
-            <label class="block text-sm font-medium text-gray-700">{{
-              ctrl.label
-            }}</label>
-            <div class="relative mt-1 rounded-md overflow-hidden">
+            <div class="mt-1 rounded-md overflow-hidden">
               <input
                 [type]="ctrl.type"
                 [formControlName]="ctrl.name"
-                class="w-full pl-1 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
-                [placeholder]="ctrl.placeholder"
+                class="peer w-full pl-1 py-2 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative"
+                placeholder=" "
               />
 
-              <span class="pointer-events-none absolute inset-0">
-                <span
-                  class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
-                ></span>
-              </span>
+              <!-- Floating Icon + Label -->
+              <label
+                class="absolute px-1 -top-1 bg-white z-50 left-3 text-sm flex items-center gap-1 transition-all duration-300 pointer-events-none peer-focus:-top-1 text-purple-0 peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm"
+              >
+                <i [class]="ctrl.icon"></i> {{ ctrl.placeholder }}
+              </label>
             </div>
 
             <!-- Error messages -->
             <div
-              class="mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
-              [class.opacity-0]="
+              class="min-h-[20px] mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
+              [class.invisible]="
                 !(
                   signupForm.get(ctrl.name)?.touched &&
                   signupForm.get(ctrl.name)?.invalid

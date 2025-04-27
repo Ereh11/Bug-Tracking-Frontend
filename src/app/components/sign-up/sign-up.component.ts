@@ -26,27 +26,32 @@ export class SignUpComponent implements OnInit {
       name: 'username',
       label: 'Username',
       type: 'text',
-      placeholder: 'Your username',
+      placeholder: 'Username',
+      icon: 'fa-solid fa-user',
     },
     {
       name: 'email',
       label: 'Email address',
       type: 'email',
-      placeholder: 'you@example.com',
+      placeholder: 'Email',
+      icon: 'fa-solid fa-envelope',
     },
     {
       name: 'password',
       label: 'Password',
       type: 'password',
-      placeholder: '••••••••',
+      placeholder: 'Password',
+      icon: 'fa-solid fa-lock',
     },
     {
       name: 'confirm',
       label: 'Confirm Password',
       type: 'password',
-      placeholder: '••••••••',
+      placeholder: 'Confirm Password',
+      icon: 'fa-solid fa-lock',
     },
   ];
+
   constructor(private fb: FormBuilder, private router: Router) {}
 
   ngOnInit() {

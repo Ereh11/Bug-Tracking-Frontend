@@ -26,13 +26,15 @@ export class SignInComponent implements OnInit {
       name: 'email',
       label: 'Email address',
       type: 'email',
-      placeholder: 'you@example.com',
+      placeholder: 'Email',
+      icon: 'fa-solid fa-envelope',
     },
     {
       name: 'password',
       label: 'Password',
       type: 'password',
-      placeholder: '••••••••',
+      placeholder: 'Password',
+      icon: 'fa-solid fa-lock',
     },
   ];
 
