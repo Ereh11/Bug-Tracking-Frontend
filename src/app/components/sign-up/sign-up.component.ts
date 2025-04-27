@@ -19,7 +19,7 @@ import { Router, RouterModule } from '@angular/router';
 export class SignUpComponent implements OnInit {
   signupForm!: FormGroup;
   isLeaving = false;
-  isEntering = false;
+  swapBorders = false;
 
   controls = [
     {
@@ -98,15 +98,13 @@ export class SignUpComponent implements OnInit {
     return errs;
   }
 
-  ngAfterViewInit() {
-    setTimeout(() => (this.isEntering = true), 10);
-  }
   leaveAndNavigate(path: string) {
     if (this.signupForm.invalid && path === '/login') {
     }
     this.isLeaving = true;
+    this.swapBorders = true;
     setTimeout(() => {
       this.router.navigate([path]);
-    }, 500);
+    }, 1500);
   }
 }

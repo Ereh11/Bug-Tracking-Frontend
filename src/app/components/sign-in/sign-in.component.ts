@@ -19,7 +19,7 @@ export class SignInComponent implements OnInit {
   signInForm!: FormGroup;
   authError: string | null = null;
   isLeaving = false;
-  isEntering = false;
+  swapBorders = false;
 
   controls = [
     {
@@ -60,11 +60,8 @@ export class SignInComponent implements OnInit {
   }
   leaveAndNavigate(path: string) {
     this.isLeaving = true;
-    setTimeout(() => this.router.navigate([path]), 500);
-  }
-
-  ngAfterViewInit() {
-    setTimeout(() => (this.isEntering = true), 10);
+    this.swapBorders = true;
+    setTimeout(() => this.router.navigate([path]), 1000);
   }
 
   onSubmit() {

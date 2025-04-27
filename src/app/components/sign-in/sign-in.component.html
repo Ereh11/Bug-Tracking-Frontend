@@ -1,103 +1,134 @@
 <div class="min-h-screen flex items-center justify-center bg-screen">
-  <div
-    class="relative min-h-[30rem] flex flex-col gap-5 max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
-    [class.opacity-0]="!isEntering || isLeaving"
-    [class.scale-90]="!isEntering || isLeaving"
-  >
-    <h2 class="text-2xl font-bold text-center text-purple-0 mb-10">
-      Welcome back
-    </h2>
-
-    <form
-      [formGroup]="signInForm"
-      (ngSubmit)="onSubmit()"
-      class="flex justify-between h-[80%] flex-col gap-10 mt-10"
+  <div class="grid grid-cols-12 w-[80%]">
+    <div
+      class="col-span-6 relative w-sm bg-white min-h-[30rem] flex flex-col gap-5 shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
+      [ngClass]="{
+        'animate-move-right': isLeaving,
+        'rounded-l-2xl': !swapBorders,
+        'rounded-r-2xl': swapBorders
+      }"
     >
-      <ng-container *ngFor="let ctrl of controls">
-        <div class="relative">
-          <label class="block text-sm font-medium text-gray-700">
-            {{ ctrl.label }}
-          </label>
-          <div class="relative mt-1 rounded-md overflow-hidden">
-            <input
-              [type]="ctrl.type"
-              [formControlName]="ctrl.name"
-              class="w-full pl-2 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
-              [placeholder]="ctrl.placeholder"
-            />
+      <h2 class="text-2xl font-bold text-center text-purple-0 mb-10">
+        Welcome back
+      </h2>
 
-            <!-- sweep effect overlay -->
-            <span class="pointer-events-none absolute inset-0">
-              <span
-                class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
-              ></span>
-            </span>
-          </div>
+      <form
+        [formGroup]="signInForm"
+        (ngSubmit)="onSubmit()"
+        class="flex justify-between h-[80%] flex-col gap-10 mt-10"
+      >
+        <ng-container *ngFor="let ctrl of controls">
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">
+              {{ ctrl.label }}
+            </label>
+            <div class="relative mt-1 rounded-md overflow-hidden">
+              <input
+                [type]="ctrl.type"
+                [formControlName]="ctrl.name"
+                class="w-full pl-2 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
+                [placeholder]="ctrl.placeholder"
+              />
 
-          <!-- Field validation errors -->
-          <div
-            class="mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
-            [class.opacity-0]="
-              !(
-                signInForm.get(ctrl.name)?.touched &&
-                signInForm.get(ctrl.name)?.invalid
-              )
-            "
-          >
+              <!-- sweep effect overlay -->
+              <span class="pointer-events-none absolute inset-0">
+                <span
+                  class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
+                ></span>
+              </span>
+            </div>
+
+            <!-- Field validation errors -->
             <div
-              *ngFor="let err of getErrors(ctrl.name)"
-              class="flex items-center gap-1"
+              class="mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
+              [class.opacity-0]="
+                !(
+                  signInForm.get(ctrl.name)?.touched &&
+                  signInForm.get(ctrl.name)?.invalid
+                )
+              "
             >
-              <i class="fa-solid fa-circle-exclamation text-error"></i>
-              <span>{{ err }}</span>
+              <div
+                *ngFor="let err of getErrors(ctrl.name)"
+                class="flex items-center gap-1"
+              >
+                <i class="fa-solid fa-circle-exclamation text-error"></i>
+                <span>{{ err }}</span>
+              </div>
             </div>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
 
-      <!-- Server / credential error -->
-      <div *ngIf="authError" class="text-error text-sm flex items-center gap-1">
-        <i class="fa-solid fa-circle-exclamation"></i>
-        <span>{{ authError }}</span>
-      </div>
-
-      <div class="flex flex-col gap-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="remember-me"
-              formControlName="rememberMe"
-              class="h-4 w-4 cursor-pointer accent-purple-0 text-purple-0 border-gray-300 rounded focus:ring-purple-0"
-            />
-            <label
-              for="remember-me"
-              class="text-sm cursor-pointer text-gray-700"
-            >
-              Remember me
-            </label>
-          </div>
-          <a class="text-sm text-purple-1 cursor-pointer hover:underline"
-            >Forgot password?</a
-          >
-        </div>
-        <button
-          type="submit"
-          [disabled]="signInForm.invalid"
-          class="w-full py-2 px-4 bg-gradient-to-b from-purple-4 to-purple-5 text-white font-semibold rounded-lg shadow-md disabled:opacity-50 transition"
+        <!-- Server / credential error -->
+        <div
+          *ngIf="authError"
+          class="text-error text-sm flex items-center gap-1"
         >
-          Sign In
-        </button>
-      </div>
-    </form>
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>{{ authError }}</span>
+        </div>
 
-    <p class="text-center text-sm text-gray-500">
-      Don’t have an account?
-      <a
-        (click)="leaveAndNavigate('/signup')"
-        class="text-purple-1 hover:underline cursor-pointer"
-        >Sign up</a
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="remember-me"
+                formControlName="rememberMe"
+                class="h-4 w-4 cursor-pointer accent-purple-0 text-purple-0 border-gray-300 rounded focus:ring-purple-0"
+              />
+              <label
+                for="remember-me"
+                class="text-sm cursor-pointer text-gray-700"
+              >
+                Remember me
+              </label>
+            </div>
+            <a class="text-sm text-purple-1 cursor-pointer hover:underline"
+              >Forgot password?</a
+            >
+          </div>
+          <button
+            type="submit"
+            [disabled]="signInForm.invalid"
+            class="w-full py-2 px-4 bg-gradient-to-b from-purple-4 to-purple-5 text-white font-semibold rounded-lg shadow-md disabled:opacity-50 transition"
+          >
+            Sign In
+          </button>
+        </div>
+      </form>
+
+      <p class="text-center text-sm text-gray-500">
+        Don’t have an account?
+        <a
+          (click)="leaveAndNavigate('/signup')"
+          class="text-purple-1 hover:underline cursor-pointer"
+          >Sign up</a
+        >
+      </p>
+    </div>
+    <!-- right side -->
+    <div
+      class="col-span-6 relative bg-black shadow-xl overflow-hidden p-10 space-y-6"
+      [ngClass]="{
+        'animate-move-left': isLeaving,
+        'rounded-r-2xl': !swapBorders,
+        'rounded-l-2xl': swapBorders
+      }"
+    >
+      <!-- Overlay -->
+      <div class="absolute inset-0 bg-purple-1/20"></div>
+      <!--  content -->
+      <div
+        class="relative z-10 flex flex-col items-center justify-center h-full text-white p-8"
       >
-    </p>
+        <img
+          src="/assets/globe.png"
+          alt="Logo"
+          class="w-1/2 mb-4 animate-spin-slow"
+        />
+        <h1 class="text-3xl font-bold animate-fade-in-scale">Track Your Bug</h1>
+      </div>
+    </div>
   </div>
 </div>

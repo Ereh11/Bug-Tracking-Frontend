@@ -1,75 +1,103 @@
 <!-- signup.component.html -->
 <div class="min-h-screen flex items-center justify-center bg-screen">
-  <div
-    class="relative max-w-md w-full bg-white rounded-2xl shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
-    [class.opacity-0]="!isEntering || isLeaving"
-    [class.scale-90]="!isEntering || isLeaving"
-  >
-    <h2 class="text-2xl font-bold text-center text-purple-0">
-      Create your account
-    </h2>
-    <form
-      [formGroup]="signupForm"
-      (ngSubmit)="leaveAndNavigate('/login')"
-      class="flex flex-col gap-2"
+  <div class="grid grid-cols-12 w-[80%]">
+    <!-- Left side -->
+    <div
+      class="col-span-6 relative bg-black shadow-xl rounded-l-2xl overflow-hidden p-10 space-y-6"
+      [ngClass]="{
+        'animate-move-right': isLeaving,
+        'rounded-l-2xl': !swapBorders,
+        'rounded-r-2xl': swapBorders
+      }"
     >
-      <ng-container *ngFor="let ctrl of controls">
-        <div class="relative">
-          <label class="block text-sm font-medium text-gray-700">{{
-            ctrl.label
-          }}</label>
-          <div class="relative mt-1 rounded-md overflow-hidden">
-            <input
-              [type]="ctrl.type"
-              [formControlName]="ctrl.name"
-              class="w-full pl-1 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
-              [placeholder]="ctrl.placeholder"
-            />
+      <!-- Overlay -->
+      <div class="absolute inset-0 bg-purple-1/20"></div>
+      <!--  content -->
+      <div
+        class="relative z-10 flex flex-col items-center justify-center h-full text-white p-8"
+      >
+        <img
+          src="/assets/globe.png"
+          alt="Logo"
+          class="w-1/2 mb-4 animate-spin-slow"
+        />
+        <h1 class="text-3xl font-bold animate-fade-in-scale">Track Your Bug</h1>
+      </div>
+    </div>
+    <div
+      class="col-span-6 relative w-sm bg-white rounded-r-2xl shadow-xl p-8 space-y-6 transition-all duration-500 ease-in-out"
+      [ngClass]="{
+        'animate-move-left': isLeaving,
+        'rounded-r-2xl': !swapBorders,
+        'rounded-l-2xl': swapBorders
+      }"
+    >
+      <h2 class="text-2xl font-bold text-center text-purple-0">
+        Create your account
+      </h2>
+      <form
+        [formGroup]="signupForm"
+        (ngSubmit)="leaveAndNavigate('/login')"
+        class="flex flex-col gap-2"
+      >
+        <ng-container *ngFor="let ctrl of controls">
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700">{{
+              ctrl.label
+            }}</label>
+            <div class="relative mt-1 rounded-md overflow-hidden">
+              <input
+                [type]="ctrl.type"
+                [formControlName]="ctrl.name"
+                class="w-full pl-1 py-1 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative z-10"
+                [placeholder]="ctrl.placeholder"
+              />
 
-            <span class="pointer-events-none absolute inset-0">
-              <span
-                class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
-              ></span>
-            </span>
-          </div>
+              <span class="pointer-events-none absolute inset-0">
+                <span
+                  class="absolute top-0 left-0 h-full w-1/4 bg-white opacity-50 animate-sweep-light"
+                ></span>
+              </span>
+            </div>
 
-          <!-- Error messages -->
-          <div
-            class="mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
-            [class.opacity-0]="
-              !(
-                signupForm.get(ctrl.name)?.touched &&
-                signupForm.get(ctrl.name)?.invalid
-              )
-            "
-          >
+            <!-- Error messages -->
             <div
-              *ngFor="let err of getErrors(ctrl.name)"
-              class="flex items-center gap-1"
+              class="mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
+              [class.opacity-0]="
+                !(
+                  signupForm.get(ctrl.name)?.touched &&
+                  signupForm.get(ctrl.name)?.invalid
+                )
+              "
             >
-              <i class="fa-solid fa-circle-exclamation text-error"></i>
-              <span>{{ err }}</span>
+              <div
+                *ngFor="let err of getErrors(ctrl.name)"
+                class="flex items-center gap-1"
+              >
+                <i class="fa-solid fa-circle-exclamation text-error"></i>
+                <span>{{ err }}</span>
+              </div>
             </div>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
 
-      <button
-        type="submit"
-        [disabled]="signupForm.invalid"
-        class="w-full pl-1 py-2 px-4 bg-gradient-to-b from-purple-4 to-purple-5 text-white font-semibold rounded-lg shadow-md disabled:opacity-50 transition"
-      >
-        Sign Up
-      </button>
-    </form>
+        <button
+          type="submit"
+          [disabled]="signupForm.invalid"
+          class="w-full pl-1 py-2 px-4 bg-gradient-to-b from-purple-4 to-purple-5 text-white font-semibold rounded-lg shadow-md disabled:opacity-50 transition"
+        >
+          Sign Up
+        </button>
+      </form>
 
-    <p class="text-center text-sm text-gray-500">
-      Already have an account?
-      <a
-        (click)="leaveAndNavigate('/login')"
-        class="text-purple-1 cursor-pointer hover:underline"
-        >Log in</a
-      >
-    </p>
+      <p class="text-center text-sm text-gray-500">
+        Already have an account?
+        <a
+          (click)="leaveAndNavigate('/login')"
+          class="text-purple-1 cursor-pointer hover:underline"
+          >Log in</a
+        >
+      </p>
+    </div>
   </div>
 </div>
