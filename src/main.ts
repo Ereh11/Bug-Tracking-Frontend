@@ -4,7 +4,14 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { routes } from './app/app.routes';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { LucideAngularModule, Bug, LogOut } from 'lucide-angular';
+import {
+  LucideAngularModule,
+  Bug,
+  LogOut,
+  Plus,
+  Check,
+  Trash,
+} from 'lucide-angular';
 import { importProvidersFrom } from '@angular/core';
 //mport { Bug } from 'lucide-angular/icons';
 
@@ -13,6 +20,8 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(withFetch()),
     provideRouter(routes),
     provideAnimations(),
-    importProvidersFrom(LucideAngularModule.pick({ Bug, LogOut })),
+    importProvidersFrom(
+      LucideAngularModule.pick({ Bug, LogOut, Plus, Check, Trash })
+    ),
   ],
 }).catch((err) => console.error(err));
