@@ -13,7 +13,6 @@ import {
   Trash,
 } from 'lucide-angular';
 import { importProvidersFrom } from '@angular/core';
-//mport { Bug } from 'lucide-angular/icons';
 
 bootstrapApplication(AppComponent, {
   providers: [

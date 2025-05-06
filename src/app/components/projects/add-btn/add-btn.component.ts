@@ -30,6 +30,7 @@ export class AddBtnComponent {
 
   cancelAddProject() {
     this.showAddProjectPopup = false;
+    this.showNameError = false;
     this.newProject = { name: '', description: '' };
   }
 }
