@@ -1,27 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
-import { ProjectComponent } from './project/project.component';
-import { PaginationComponent } from './pagination/pagination.component';
-import { UserRoleComponent } from './user-role/user-role.component';
-import { AddBtnComponent } from './add-btn/add-btn.component';
-import { FilterComponent } from './filter/filter.component';
 
 @Component({
-  selector: 'app-projects',
-  imports: [
-    LucideAngularModule,
-    CommonModule,
-    ProjectComponent,
-    PaginationComponent,
-    UserRoleComponent,
-    AddBtnComponent,
-    FilterComponent,
-  ],
-  templateUrl: './projects.component.html',
-  styleUrl: './projects.component.css',
+  selector: 'app-filter',
+  imports: [LucideAngularModule, CommonModule],
+  templateUrl: './filter.component.html',
+  styleUrl: './filter.component.css',
 })
-export class ProjectsComponent {
+export class FilterComponent {
   isOpen = false;
   selectedStatus = 'All status';
   @ViewChild('dropdownWrapper') dropdownRef!: ElementRef;
