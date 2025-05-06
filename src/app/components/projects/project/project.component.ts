@@ -8,4 +8,15 @@ import { LucideAngularModule } from 'lucide-angular';
   templateUrl: './project.component.html',
   styleUrl: './project.component.css',
 })
-export class ProjectComponent {}
+export class ProjectComponent {
+  showConfirmPopup = false;
+
+  confirmDelete() {
+    this.showConfirmPopup = false;
+    console.log('Deleted!');
+  }
+
+  cancelDelete() {
+    this.showConfirmPopup = false;
+  }
+}
