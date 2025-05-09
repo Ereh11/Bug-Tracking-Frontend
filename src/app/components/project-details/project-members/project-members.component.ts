@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { DeleteMemberComponent } from '../../project-btns/delete-member/delete-member.component';
 
 @Component({
   selector: 'app-project-members',
-  imports: [],
+  imports: [DeleteMemberComponent],
   templateUrl: './project-members.component.html',
   styleUrl: './project-members.component.css',
 })

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { DeleteBugComponent } from '../../project-btns/delete-bug/delete-bug.component';
 
 @Component({
   selector: 'app-project-bugs',
-  imports: [CommonModule],
+  imports: [CommonModule, DeleteBugComponent],
   templateUrl: './project-bugs.component.html',
   styleUrl: './project-bugs.component.css',
 })

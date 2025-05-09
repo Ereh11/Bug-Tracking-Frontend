@@ -97,23 +97,7 @@
               <i
                 class="fa-solid fa-file-arrow-up text-yellow-400 cursor-pointer hover:text-yellow-300 active:scale-95"
               ></i>
-              <svg
-                (click)="$event.stopPropagation()"
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="lucide lucide-trash-icon lucide-trash text-error w-5 h-4 hover:text-red-600 cursor-pointer transition-all duration-200 ease-in-out active:scale-90"
-              >
-                <path d="M3 6h18" />
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-              </svg>
+              <app-delete-bug />
             </div>
           </td>
         </tr>
