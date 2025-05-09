@@ -60,6 +60,7 @@ module.exports = {
         onhold: "#6E6E6E",
         cancelled: "#FB4B4E",
         Manager: "#4453D2",
+        member: "#2f1b32",
       },
     },
   },

@@ -1,6 +1,6 @@
 <button
   (click)="showAddProjectPopup = true"
-  class="w-full flex h-10 px-2 items-center justify-center md:justify-normal gap-1 text-white rounded-lg bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-out"
+  class="w-full flex h-10 px-2 items-center justify-center md:justify-normal gap-1 text-white rounded-lg bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-ou active:scale-95"
 >
   <!-- <lucide-icon name="Plus"></lucide-icon> -->
   <svg
@@ -70,13 +70,13 @@
     <div class="flex justify-end gap-2 mt-6">
       <button
         (click)="createProject()"
-        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80"
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
       >
         Create
       </button>
       <button
         (click)="cancelAddProject()"
-        class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+        class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 active:scale-95"
       >
         Cancel
       </button>
