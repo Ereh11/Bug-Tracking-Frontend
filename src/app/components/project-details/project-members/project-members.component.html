@@ -1,0 +1,124 @@
+<div class="flex flex-col gap-4">
+  <div class="flex justify-between items-center flex-col md:flex-row gap-2">
+    <div class="flex gap-2 items-center text-hover">
+      <i class="fa-solid fa-users"></i>
+      <h1 class="text-xl font-bold">Project Members</h1>
+    </div>
+    <button
+      class="flex items-center justify-center md:justify-normal gap-1 text-white px-2 py-2 rounded-md bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-out active:scale-95"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-plus-icon lucide-plus"
+      >
+        <path d="M5 12h14" />
+        <path d="M12 5v14" />
+      </svg>
+      <span class="font-medium">Add Member</span>
+    </button>
+  </div>
+  <span class="text-gray-400 text-sm"
+    >Team members assigned to this project</span
+  >
+  <!-- member -->
+  <div class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
+    <div class="flex gap-2 items-center justify-between">
+      <!-- Member avatar -->
+      <div
+        class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg"
+      >
+        {{ managerName.charAt(0) }}
+      </div>
+
+      <!-- Member details -->
+      <div class="flex flex-col">
+        <h1 class="font-bold text-white">{{ managerName }}</h1>
+        <p class="text-gray-500 text-sm">{{ managerEmail }}</p>
+      </div>
+    </div>
+    <!-- Role badge -->
+    <span class="text-white bg-primary p-1 rounded-full text-xs font-semibold">
+      Manager
+    </span>
+  </div>
+
+  <!-- member -->
+  <div class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
+    <div class="flex gap-2 items-center justify-between">
+      <!-- Member avatar -->
+      <div
+        class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg"
+      >
+        {{ managerName.charAt(0) }}
+      </div>
+
+      <!-- Member details -->
+      <div class="flex flex-col">
+        <h1 class="font-bold text-white">{{ managerName }}</h1>
+        <p class="text-gray-500 text-sm">{{ managerEmail }}</p>
+      </div>
+    </div>
+
+    <svg
+      (click)="$event.stopPropagation()"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-trash-icon lucide-trash text-error w-6 h-6 hover:text-red-600 hover:bg-hover p-1 rounded-lg cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+    >
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  </div>
+
+  <!-- member -->
+  <div class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
+    <div class="flex gap-2 items-center justify-between">
+      <!-- Member avatar -->
+      <div
+        class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg"
+      >
+        {{ managerName.charAt(0) }}
+      </div>
+
+      <!-- Member details -->
+      <div class="flex flex-col">
+        <h1 class="font-bold text-white">{{ managerName }}</h1>
+        <p class="text-gray-500 text-sm">{{ managerEmail }}</p>
+      </div>
+    </div>
+
+    <svg
+      (click)="$event.stopPropagation()"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="lucide lucide-trash-icon lucide-trash text-error w-6 h-6 hover:text-red-600 hover:bg-hover p-1 rounded-lg cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+    >
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  </div>
+</div>
