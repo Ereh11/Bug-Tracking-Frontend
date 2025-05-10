@@ -1,0 +1,198 @@
+<button
+  (click)="showAddBugPopup = true"
+  class="flex items-center justify-center md:justify-normal gap-1 text-white px-6 py-2 rounded-md bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-out active:scale-95"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-plus-icon lucide-plus"
+  >
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </svg>
+  <span class="font-medium">Add Bug</span>
+</button>
+
+<!-- popup -->
+
+<div
+  *ngIf="showAddBugPopup"
+  class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+>
+  <div
+    class="bg-screen text-white p-6 text-sm rounded-xl shadow-lg z-50 w-[90%] sm:w-[500px]"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Create New Bug</h2>
+      <i
+        (click)="cancelAddBug()"
+        class="fa-solid fa-xmark text-gray-300 hover:text-error active:scale-95 cursor-pointer"
+      ></i>
+    </div>
+
+    <div class="space-y-4">
+      <p class="mb-4 text-sm text-gray-300">
+        Create a new bug or issue for this project.
+      </p>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Bug Name</label>
+        <input
+          type="text"
+          [(ngModel)]="newBug.name"
+          (input)="showNameError = false"
+          placeholder="Enter Bug name"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+        />
+        <p
+          class="text-sm font-semibold text-error mt-1"
+          [class.invisible]="!showNameError"
+        >
+          Bug name is required.
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Description</label>
+        <textarea
+          [(ngModel)]="newBug.description"
+          placeholder="Enter Bug description"
+          rows="4"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+        ></textarea>
+      </div>
+
+      <!-- Priority Dropdown -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Priority</label>
+        <div class="relative">
+          <button
+            (click)="togglePriority()"
+            class="w-full p-2 rounded-lg bg-white/10 text-white border border-gray-500 flex justify-between items-center"
+          >
+            <span>{{ selectedPriority }}</span>
+            <i
+              class="fa-solid"
+              [ngClass]="{
+                'fa-chevron-up': isPriorityOpen,
+                'fa-chevron-down': !isPriorityOpen
+              }"
+            ></i>
+          </button>
+          <ul
+            *ngIf="isPriorityOpen"
+            class="absolute bottom-full z-10 mt-2 w-full bg-screen border border-action rounded-lg shadow-lg"
+          >
+            <li
+              *ngFor="let option of priorityOptions"
+              (click)="selectPriority(option)"
+              class="px-4 py-2 hover:bg-hover rounded-lg cursor-pointer flex justify-between"
+            >
+              <span>{{ option }}</span>
+              <i
+                *ngIf="option === selectedPriority"
+                class="fa-solid fa-check ml-2"
+              ></i>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Status Dropdown -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Status</label>
+        <div class="relative">
+          <button
+            (click)="toggleStatus()"
+            class="w-full p-2 rounded-lg bg-white/10 text-white border border-gray-500 flex justify-between items-center"
+          >
+            <span>{{ selectedStatus }}</span>
+            <i
+              class="fa-solid"
+              [ngClass]="{
+                'fa-chevron-up': isStatusOpen,
+                'fa-chevron-down': !isStatusOpen
+              }"
+            ></i>
+          </button>
+          <ul
+            *ngIf="isStatusOpen"
+            class="absolute bottom-full z-10 mt-2 w-full bg-screen border border-action rounded-lg shadow-lg"
+          >
+            <li
+              *ngFor="let option of statusOptions"
+              (click)="selectStatus(option)"
+              class="px-4 py-2 hover:bg-hover rounded-lg cursor-pointer flex justify-between"
+            >
+              <span>{{ option }}</span>
+              <i
+                *ngIf="option === selectedStatus"
+                class="fa-solid fa-check ml-2"
+              ></i>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Assign To Dropdown -->
+      <div>
+        <label class="block text-sm font-medium mb-1"
+          >Assign To (Optional)</label
+        >
+        <div class="relative">
+          <button
+            (click)="toggleAssignee()"
+            class="w-full p-2 rounded-lg bg-white/10 text-white border border-gray-500 flex justify-between items-center"
+          >
+            <span>{{ selectedAssignee }}</span>
+            <i
+              class="fa-solid"
+              [ngClass]="{
+                'fa-chevron-up': isAssigneeOpen,
+                'fa-chevron-down': !isAssigneeOpen
+              }"
+            ></i>
+          </button>
+          <ul
+            *ngIf="isAssigneeOpen"
+            class="absolute bottom-full z-10 mt-2 w-full bg-screen border border-action rounded-lg shadow-lg"
+          >
+            <li
+              *ngFor="let member of teamMembers"
+              (click)="selectAssignee(member)"
+              class="px-4 py-2 hover:bg-hover rounded-lg cursor-pointer flex justify-between"
+            >
+              <span>{{ member }}</span>
+              <i
+                *ngIf="member === selectedAssignee"
+                class="fa-solid fa-check ml-2"
+              ></i>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button
+        (click)="createBug()"
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+      >
+        Create Bug
+      </button>
+      <button
+        (click)="cancelAddBug()"
+        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

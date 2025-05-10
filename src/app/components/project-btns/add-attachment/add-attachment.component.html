@@ -1,0 +1,136 @@
+<i
+  (click)="showAttachmentPopup = true; logClick()"
+  class="fa-solid fa-file-arrow-up text-yellow-400 cursor-pointer hover:text-yellow-300 active:scale-95"
+></i>
+
+<!-- popup -->
+
+<div
+  *ngIf="showAttachmentPopup"
+  class="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center"
+>
+  <div
+    class="bg-screen text-white p-6 text-center text-sm rounded-xl shadow-lg z-50 w-[90%] sm:w-[500px]"
+  >
+    <div class="flex justify-between text-center items-center mb-4">
+      <h2 class="text-xl font-bold">Bug Attachments</h2>
+      <i
+        (click)="cancelUploadFilePopup()"
+        class="fa-solid fa-xmark text-gray-300 hover:text-error active:scale-95 cursor-pointer"
+      ></i>
+    </div>
+
+    <div class="space-y-4">
+      <p class="mb-4 text-sm text-gray-300">Upload an Attachment to the Bug</p>
+
+      <!-- File Input -->
+      <label class="block">
+        <span class="text-sm">File Name</span>
+        <input
+          type="text"
+          [(ngModel)]="fileName"
+          class="mt-1 w-full bg-screen border border-action focus:border-primary focus:outline-none rounded px-3 py-2"
+        />
+      </label>
+
+      <label
+        for="file-input"
+        class="cursor-pointer mt-2 gap-1 flex items-center justify-center text-white border border-action rounded-lg py-2 px-4 text-center hover:bg-hover transition-all active:scale-95"
+      >
+        <i class="fa-solid fa-paperclip text-xs text-gray-400"></i>
+        <span>Choose File</span>
+        <input
+          id="file-input"
+          type="file"
+          (change)="onFileSelected($event)"
+          accept="image/*,.pdf"
+          class="hidden"
+        />
+      </label>
+
+      <!-- Preview Section -->
+      <div *ngIf="previewUrl" class="mt-4 text-center">
+        <div class="bg-screen p-2 rounded-lg">
+          <div
+            *ngIf="selectedFile?.type?.startsWith('image')"
+            class="w-32 h-32 overflow-hidden rounded-md mx-auto"
+          >
+            <img
+              [src]="previewUrl"
+              alt="Preview"
+              class="object-cover w-full h-full"
+            />
+          </div>
+          <div
+            *ngIf="selectedFile?.type === 'application/pdf'"
+            class="text-sm text-center text-gray-400 italic"
+          >
+            PDF Preview not supported here, use View after adding.
+          </div>
+        </div>
+
+        <!-- File Actions -->
+        <div class="flex justify-center mt-2">
+          <button (click)="changeFile()" class="text-error text-sm">
+            Remove File
+          </button>
+        </div>
+      </div>
+
+      <!-- Add Button -->
+      <button
+        (click)="addAttachment()"
+        [disabled]="!selectedFile"
+        class="w-full bg-primary hover:bg-primary/80 py-2 rounded text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out active:scale-95"
+      >
+        Add Attachment
+      </button>
+
+      <!-- Uploaded Files List -->
+      <div
+        *ngFor="let attach of attachments; let i = index"
+        class="bg-screen p-3 mt-2 rounded-lg flex justify-between items-center"
+      >
+        <div class="flex items-center space-x-3">
+          <img
+            *ngIf="attach.file.type.startsWith('image')"
+            [src]="attach.preview"
+            class="w-10 h-10 rounded"
+          />
+          <div class="text-sm">
+            <p class="font-medium">{{ attach.name }}</p>
+            <p class="text-gray-400 text-xs">
+              {{ attach.file.size / 1000 | number : "1.0-2" }} KB
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button
+            (click)="viewFile(attach.preview)"
+            class="text-sm text-primary active:scale-95"
+          >
+            <i class="fa-regular fa-eye"></i>
+          </button>
+          <svg
+            (click)="removeAttachment(i)"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-trash-icon lucide-trash text-error w-6 h-6 hover:text-red-600 hover:bg-hover p-1 rounded-lg cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+          >
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+          </svg>
+        </div>
+      </div>
+    </div>
+    <!--  -->
+  </div>
+</div>
