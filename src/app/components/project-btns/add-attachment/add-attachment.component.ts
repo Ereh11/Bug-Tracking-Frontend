@@ -36,8 +36,14 @@ export class AddAttachmentComponent {
       this.fileName = file.name;
 
       const reader = new FileReader();
-      reader.onload = () => (this.previewUrl = reader.result);
-      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const blob = new Blob([reader.result as ArrayBuffer], {
+          type: file.type,
+        });
+        this.previewUrl = URL.createObjectURL(blob);
+      };
+
+      reader.readAsArrayBuffer(file);
     }
   }
 
