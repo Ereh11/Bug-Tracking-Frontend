@@ -1,10 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { DeleteBugComponent } from '../../project-btns/delete-bug/delete-bug.component';
+import { AddBugComponent } from '../../project-btns/add-bug/add-bug.component';
+import { EditBugComponent } from '../../project-btns/edit-bug/edit-bug.component';
 
 @Component({
   selector: 'app-project-bugs',
-  imports: [CommonModule, DeleteBugComponent],
+  imports: [
+    CommonModule,
+    DeleteBugComponent,
+    AddBugComponent,
+    EditBugComponent,
+  ],
   templateUrl: './project-bugs.component.html',
   styleUrl: './project-bugs.component.css',
 })

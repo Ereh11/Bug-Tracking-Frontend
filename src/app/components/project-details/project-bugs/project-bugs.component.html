@@ -4,26 +4,7 @@
       <i class="fa-solid fa-bug"></i>
       <h1 class="text-xl font-bold">Project Bugs</h1>
     </div>
-    <button
-      class="flex items-center justify-center md:justify-normal gap-1 text-white px-6 py-2 rounded-md bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-out active:scale-95"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="lucide lucide-plus-icon lucide-plus"
-      >
-        <path d="M5 12h14" />
-        <path d="M12 5v14" />
-      </svg>
-      <span class="font-medium">Add Bug</span>
-    </button>
+    <app-add-bug />
   </div>
   <span class="text-gray-400 text-sm">List of bugs in this project</span>
   <!-- Bug Table -->
@@ -88,9 +69,7 @@
           <!-- Actions -->
           <td class="px-4 py-3">
             <div class="flex justify-center gap-3 text-sm">
-              <i
-                class="fa-solid text-primary cursor-pointer fa-pen-to-square active:scale-95"
-              ></i>
+              <app-edit-bug />
               <i
                 class="fa-solid fa-comment-dots text-inprogress cursor-pointer hover:text-blue-300 active:scale-95"
               ></i>
