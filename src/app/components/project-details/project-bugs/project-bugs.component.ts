@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { DeleteBugComponent } from '../../project-btns/delete-bug/delete-bug.component';
 import { AddBugComponent } from '../../project-btns/add-bug/add-bug.component';
 import { EditBugComponent } from '../../project-btns/edit-bug/edit-bug.component';
+import { AddAttachmentComponent } from '../../project-btns/add-attachment/add-attachment.component';
+import { AddTicketComponent } from '../../project-btns/add-ticket/add-ticket.component';
 
 @Component({
   selector: 'app-project-bugs',
@@ -11,6 +13,8 @@ import { EditBugComponent } from '../../project-btns/edit-bug/edit-bug.component
     DeleteBugComponent,
     AddBugComponent,
     EditBugComponent,
+    AddAttachmentComponent,
+    AddTicketComponent,
   ],
   templateUrl: './project-bugs.component.html',
   styleUrl: './project-bugs.component.css',
