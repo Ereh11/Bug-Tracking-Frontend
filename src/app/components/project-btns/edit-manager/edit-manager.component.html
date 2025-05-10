@@ -1,0 +1,78 @@
+<button
+  (click)="openChangeManagerPopup()"
+  class="border border-action text-white px-2 py-2 rounded-md hover:bg-action active:scale-95"
+>
+  Change Manager
+</button>
+
+<!-- Change Manager Popup -->
+<div
+  *ngIf="showChangeManagerPopup"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+>
+  <div class="bg-screen text-white p-6 rounded-xl w-[90%] max-w-md shadow-xl">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Change Project Manager</h2>
+      <button
+        (click)="closePopup()"
+        class="text-gray-300 hover:text-error active:scale-95"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <p class="mb-4 text-sm text-gray-300">
+      Select a member to be the new project manager.
+    </p>
+
+    <div
+      *ngFor="let member of teamMembers"
+      class="flex items-center gap-3 mb-3 cursor-pointer p-2 rounded-md transition"
+      (click)="selectManager(member)"
+    >
+      <input
+        type="checkbox"
+        [checked]="selectedManager === member"
+        class="accent-primary cursor-pointer rounded-xl w-4 h-4"
+        (click)="$event.stopPropagation(); selectManager(member)"
+      />
+
+      <div class="flex-1">
+        <div class="flex items-center gap-2">
+          <div
+            class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
+            [ngClass]="member.color"
+          >
+            {{ member.name[0] }}
+          </div>
+          <div>
+            <p class="font-semibold">{{ member.name }}</p>
+            <p class="text-sm text-gray-400">{{ member.email }}</p>
+          </div>
+        </div>
+      </div>
+
+      <span
+        class="text-xs px-2 py-1 rounded-full font-semibold text-white"
+        [ngClass]="member.badgeColor || 'bg-error'"
+      >
+        {{ member.role }}
+      </span>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button
+        (click)="confirmManagerChange()"
+        class="bg-primary px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+      >
+        Confirm Change
+      </button>
+      <button
+        (click)="closePopup()"
+        class="border border-action px-4 py-2 rounded hover:bg-member active:scale-95"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
