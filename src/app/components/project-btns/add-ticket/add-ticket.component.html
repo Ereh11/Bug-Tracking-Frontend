@@ -1,3 +1,63 @@
 <i
+  (click)="toggleCommentPopup()"
   class="fa-solid fa-comment-dots text-inprogress cursor-pointer hover:text-blue-300 active:scale-95"
 ></i>
+
+<!-- Comment Modal -->
+<div
+  *ngIf="showCommentPopup"
+  class="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center"
+>
+  <div
+    class="bg-screen text-white p-6 rounded-xl shadow-lg w-[90%] sm:w-[500px]"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Bug Tickets</h2>
+      <i
+        (click)="toggleCommentPopup()"
+        class="fa-solid fa-xmark text-gray-300 hover:text-error active:scale-95 cursor-pointer"
+      ></i>
+    </div>
+
+    <p class="text-sm text-gray-300 mb-4">
+      View and add comments for this bug.
+    </p>
+
+    <!-- Comments List -->
+    <div class="space-y-4 max-h-60 overflow-y-auto text-left pr-1">
+      <div *ngFor="let comment of comments" class="bg-dark p-3">
+        <div class="flex items-center gap-3 mb-1">
+          <div
+            class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
+            [ngClass]="comment.color"
+          >
+            {{ comment.name[0] }}
+          </div>
+          <div class="text-sm flex justify-between gap-3 items-center">
+            <p class="font-semibold">{{ comment.name }}</p>
+            <p class="text-xs text-gray-400">
+              {{ comment.date | date : "short" }}
+            </p>
+          </div>
+        </div>
+        <p class="text-sm text-white mt-2 pl-11">{{ comment.text }}</p>
+      </div>
+    </div>
+
+    <!-- Add Comment Input -->
+    <div class="mt-4 border-t border-t-action pt-4 flex items-center gap-2">
+      <input
+        [(ngModel)]="newComment"
+        placeholder="Add a comment..."
+        class="flex-1 bg-screen border border-action focus:border-primary focus:outline-none rounded px-3 py-2 text-white"
+      />
+      <button
+        (click)="addComment()"
+        class="bg-primary px-4 py-2 rounded text-sm text-white hover:bg-primary/90 active:scale-95 disabled:opacity-50"
+        [disabled]="!newComment.trim()"
+      >
+        Add
+      </button>
+    </div>
+  </div>
+</div>
