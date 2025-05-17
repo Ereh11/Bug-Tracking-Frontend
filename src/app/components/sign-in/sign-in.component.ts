@@ -7,11 +7,13 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { HttpClientModule } from '@angular/common/http';
+import { AuthService, LoginRequest } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-sign-in',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, HttpClientModule],
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.css'],
 })
@@ -20,6 +22,7 @@ export class SignInComponent implements OnInit {
   authError: string | null = null;
   isLeaving = false;
   swapBorders = false;
+  isLoading = false;
 
   controls = [
     {
@@ -38,7 +41,11 @@ export class SignInComponent implements OnInit {
     },
   ];
 
-  constructor(private fb: FormBuilder, private router: Router) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
     this.signInForm = this.fb.group({
@@ -46,6 +53,11 @@ export class SignInComponent implements OnInit {
       password: ['', [Validators.required]],
       rememberMe: [false],
     });
+
+    // If user is already logged in, redirect to home or dashboard
+    if (this.authService.isLoggedIn) {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   getErrors(controlName: string): string[] {
@@ -60,6 +72,7 @@ export class SignInComponent implements OnInit {
 
     return errs;
   }
+
   leaveAndNavigate(path: string) {
     this.isLeaving = true;
     this.swapBorders = true;
@@ -68,44 +81,45 @@ export class SignInComponent implements OnInit {
 
   onSubmit() {
     this.authError = null;
+    this.isLoading = true;
 
     if (this.signInForm.invalid) {
       this.signInForm.markAllAsTouched();
+      this.isLoading = false;
       return;
     }
 
-    const { email, password } = this.signInForm.value;
+    const loginRequest: LoginRequest = {
+      email: this.signInForm.value.email,
+      password: this.signInForm.value.password
+    };
 
-    fakeAuthService
-      .signIn(email, password)
-      .then(() => {
-        this.leaveAndNavigate('/signup');
-      })
-      .catch((errCode) => {
-        if (errCode === 'user-not-found') {
-          this.authError = 'No account found with this email';
-        } else if (errCode === 'wrong-password') {
-          this.authError = 'Incorrect password';
-        } else {
-          this.authError = 'Authentication failed. Please try again.';
+    this.authService.login(loginRequest)
+      .subscribe({
+        next: (user) => {
+          this.isLoading = false;
+          console.log('Login successful:', user);
+          // Navigate to dashboard or home page after successful login
+          this.leaveAndNavigate('/home');
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Login erro');
+          console.error('Login error:', error);
+          this.authError = error.message || 'Login failed';
+          
+          // Handle different error scenarios
+          if (error.status === 0) {
+            this.authError = 'Unable to connect to the server. Please check your internet connection or try again later.';
+          } else if (error.status === 401 || error.message?.includes('Invalid credentials') || error.message?.includes('not found')) {
+            this.authError = 'Invalid email or password';
+
+          } else if (error.status === 403 || error.message?.includes('locked') || error.message?.includes('disabled')) {
+            this.authError = 'Account is locked or disabled. Please contact support.';
+          } else {
+            this.authError = 'Authentication failed. Please try again.';
+          }
         }
       });
   }
 }
-
-//fake
-const fakeAuthService = {
-  signIn(email: string, password: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email !== 'user@example.com') {
-          return reject('user-not-found');
-        }
-        if (password !== 'Password1!') {
-          return reject('wrong-password');
-        }
-        resolve();
-      }, 700);
-    });
-  },
-};

@@ -94,6 +94,13 @@
           </button>
         </div>
       </form>
+      <div
+  class="text-error text-sm flex items-center gap-1 min-h-[10px]"
+  [class.invisible]="!authError"
+>
+  <i class="fa-solid fa-circle-exclamation"></i>
+  <span>{{ authError || '‎' }}</span> <!-- Invisible placeholder if null -->
+</div>
 
       <p class="text-center text-sm text-gray-500">
         Don’t have an account?
