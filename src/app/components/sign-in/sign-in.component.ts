@@ -56,7 +56,7 @@ export class SignInComponent implements OnInit {
 
     // If user is already logged in, redirect to home or dashboard
     if (this.authService.isLoggedIn) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/project']);
     }
   }
 
@@ -100,14 +100,14 @@ export class SignInComponent implements OnInit {
           this.isLoading = false;
           console.log('Login successful:', user);
           // Navigate to dashboard or home page after successful login
-          this.leaveAndNavigate('/home');
+          this.leaveAndNavigate('/project');
         },
         error: (error) => {
           this.isLoading = false;
           console.error('Login erro');
           console.error('Login error:', error);
           this.authError = error.message || 'Login failed';
-          
+
           // Handle different error scenarios
           if (error.status === 0) {
             this.authError = 'Unable to connect to the server. Please check your internet connection or try again later.';

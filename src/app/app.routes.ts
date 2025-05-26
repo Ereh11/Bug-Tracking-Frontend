@@ -9,5 +9,6 @@ export const routes: Routes = [
   { path: 'signup', component: SignUpComponent },
   { path: 'login', component: SignInComponent },
   { path: 'details', component: ProjectDetailsComponent },
+  { path: 'project', component: ProjectsComponent },
   { path: '**', component: SignUpComponent },
 ];
