@@ -1,0 +1,35 @@
+<section class="p-4 flex flex-col gap-4 border border-action rounded-md">
+  <div class="flex gap-2 items-center text-hover">
+    <i class="fa-solid fa-user"></i>
+    <h1 class="text- xl font-bold">Project Manager</h1>
+  </div>
+  <div class="flex justify-between flex-col md:flex-row gap-2 items-center">
+    <!-- manager name -->
+    <div
+      class="p-2 border flex gap-2 items-center justify-between border-action rounded-3xl"
+    >
+      <!-- Manager avatar -->
+      <div
+        class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg"
+      >
+        {{ managerName.charAt(0) }}
+      </div>
+
+      <!-- Manager details -->
+      <div class="flex flex-col">
+        <h1 class="font-bold text-white">{{ managerName }}</h1>
+        <p class="text-gray-500 text-sm">{{ managerEmail }}</p>
+      </div>
+
+      <!-- Role badge -->
+      <span
+        class="text-white bg-primary p-1 rounded-full text-xs font-semibold"
+      >
+        Manager
+      </span>
+    </div>
+    <!-- /manager name -->
+
+    <app-edit-manager />
+  </div>
+</section>

@@ -1,0 +1,69 @@
+<button
+  (click)="openEditProjectPopup()"
+  class="border border-action text-white px-8 py-2 rounded-md hover:bg-action active:scale-95"
+>
+  Edit Project
+</button>
+
+<!-- popup -->
+
+<div
+  *ngIf="showEditProjectPopup"
+  class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+>
+  <div
+    class="bg-screen text-white p-6 rounded-xl shadow-lg z-50 w-[90%] sm:w-[500px]"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Edit Project</h2>
+      <i
+        (click)="cancelEditProject()"
+        class="fa-solid fa-xmark text-gray-300 hover:text-error active:scale-95 cursor-pointer"
+      ></i>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Project Name</label>
+        <input
+          type="text"
+          [(ngModel)]="editProject.name"
+          (input)="showNameError = false"
+          placeholder="Enter project name"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+        />
+        <p
+          class="text-sm font-semibold text-error mt-1"
+          [class.invisible]="!showNameError"
+        >
+          Project name is required.
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Description</label>
+        <textarea
+          [(ngModel)]="editProject.description"
+          placeholder="Enter project description"
+          rows="4"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button
+        (click)="submitEditProject()"
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+      >
+        Change Project
+      </button>
+      <button
+        (click)="cancelEditProject()"
+        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

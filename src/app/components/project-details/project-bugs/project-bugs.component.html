@@ -1,0 +1,83 @@
+<div class="flex flex-col gap-4">
+  <div class="flex justify-between items-center flex-col md:flex-row gap-2">
+    <div class="flex gap-2 items-center text-hover">
+      <i class="fa-solid fa-bug"></i>
+      <h1 class="text-xl font-bold">Project Bugs</h1>
+    </div>
+    <app-add-bug />
+  </div>
+  <span class="text-gray-400 text-sm">List of bugs in this project</span>
+  <!-- Bug Table -->
+  <div class="overflow-auto scrollbar-hide">
+    <table class="w-full text-sm text-center border-collapse overflow-x-hidden">
+      <thead>
+        <tr class="text-gray-300 border-b border-action">
+          <th class="py-3">Title</th>
+          <th class="py-3">Status</th>
+          <th class="py-3">Priority</th>
+          <th class="py-3">Assigned To</th>
+          <th class="py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bug of bugs" class="border-b border-action">
+          <!-- Title -->
+          <td class="px-4 py-3">
+            <div
+              class="flex items-center gap-2 text-left whitespace-normal break-words max-w-[200px] mx-auto"
+            >
+              <span class="w-2 h-2 bg-purple-500 rounded-full shrink-0"></span>
+              <span class="truncate whitespace-nowrap">{{ bug.title }}</span>
+            </div>
+          </td>
+
+          <!-- Status -->
+          <td class="px-4 py-3">
+            <span
+              [ngClass]="{
+              'text-cancelled': bug.status === 'New',
+              'text-inprogress': bug.status === 'In Progress',
+              'text-onhold': bug.status === 'Closed',
+              'text-completed': bug.status === 'Resolved',
+              'text-orange-500': bug.status === 'Reopened',
+              'text-planning': bug.status === 'Assigned',
+            }"
+              class="px-2 py-1 rounded-full text-xs font-semibold inline-block"
+            >
+              {{ bug.status }}
+            </span>
+          </td>
+
+          <!-- Priority -->
+          <td class="px-4 py-3">
+            <span
+              [ngClass]="{
+                'bg-planning ': bug.priority === 'Medium',
+                'bg-cancelled': bug.priority === 'High',
+                'bg-completed ': bug.priority === 'Low',
+                'bg-inprogress ': bug.priority === 'Critical'
+              }"
+              class="px-2 py-1 rounded-full text-xs font-semibold inline-block"
+            >
+              {{ bug.priority }}
+            </span>
+          </td>
+
+          <!-- Assigned To -->
+          <td class="px-4 py-3">{{ bug.assignedTo || "Unassigned" }}</td>
+
+          <!-- Actions -->
+          <td class="px-4 py-3">
+            <div class="flex justify-center gap-3 text-sm">
+              <app-edit-bug />
+              <app-add-ticket />
+              <app-add-attachment />
+              <app-delete-bug />
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <!-- /Bug Table -->
+</div>

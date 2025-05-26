@@ -1,0 +1,229 @@
+<section class="grid grid-cols-12 w-full gap-4 content-center text-white">
+  <!--  and Popup Overlay -->
+  <div
+    *ngIf="showConfirmPopup"
+    class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+  >
+    <div class="bg-screen text-white p-6 rounded-xl shadow-lg z-50 w-80">
+      <div class="flex justify-between">
+        <h2 class="text-lg font-bold mb-4">Confirm Deletion</h2>
+        <i
+          (click)="confirmDelete()"
+          class="fa-solid fa-xmark text-gray-300 hover:text-error active:scale-95 cursor-pointer"
+        ></i>
+      </div>
+      <p class="text-sm mb-6">Are you sure you want to delete this project?</p>
+      <div class="flex justify-end gap-2">
+        <button
+          (click)="confirmDelete()"
+          class="bg-error text-white px-4 py-2 rounded hover:bg-error/80"
+        >
+          Delete
+        </button>
+        <button
+          (click)="cancelDelete()"
+          class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- /Popup Overlay -->
+
+  <div
+    [routerLink]="['/details']"
+    class="col-span-12 w-full sm:col-span-6 lg:col-span-4 border bg-black/30 text-white border-action rounded-2xl flex flex-col justify-center gap-2 p-4 cursor-pointer hover:border-primary"
+  >
+    <div class="flex items-center justify-between w-full">
+      <h2 class="text-lg font-semibold">Bug Ticket</h2>
+      <svg
+        (click)="showConfirmPopup = true; $event.stopPropagation()"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-trash-icon lucide-trash text-error w-5 h-4 hover:text-red-600 cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+      >
+        <path d="M3 6h18" />
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      </svg>
+    </div>
+    <p class="text-sm text-gray-300 line-clamp-2 h-[44px]">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut alias quas
+      veniam quisquam rem ipsam, consectetur in. Omnis recusandae provident
+      nisi, maxime quibusdam magnam tempore repellendus nemo natus, illum
+      cumque.
+    </p>
+    <div
+      class="w-full h-px bg-gradient-to-r from-screen via-action to-screen"
+    ></div>
+    <div class="flex items-center justify-between w-full">
+      <h2 class="">Completed</h2>
+      <span class="w-3 h-3 bg-completed rounded-full"></span>
+    </div>
+  </div>
+  <!-- /1 -->
+  <div
+    [routerLink]="['/details']"
+    class="col-span-12 w-full sm:col-span-6 lg:col-span-4 bg-black/30 text-white border border-action rounded-2xl flex flex-col justify-center gap-2 p-4 cursor-pointer hover:border-primary"
+  >
+    <div class="flex items-center justify-between w-full">
+      <h2 class="text-lg font-semibold">Bug Ticket</h2>
+      <svg
+        (click)="showConfirmPopup = true; $event.stopPropagation()"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-trash-icon lucide-trash text-error w-5 h-4 hover:text-red-600 cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+      >
+        <path d="M3 6h18" />
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      </svg>
+    </div>
+    <p class="text-sm text-gray-300 line-clamp-2 h-[44px]">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut alias quas
+      veniam quisquam rem ipsam, consectetur in. Omnis recusandae provident
+      nisi, maxime quibusdam magnam tempore repellendus nemo natus, illum
+      cumque.
+    </p>
+    <div
+      class="w-full h-px bg-gradient-to-r from-screen via-action to-screen"
+    ></div>
+    <div class="flex items-center justify-between w-full">
+      <h2 class="">InProgress</h2>
+      <span class="w-3 h-3 bg-inprogress rounded-full"></span>
+    </div>
+  </div>
+  <!-- /2 -->
+  <div
+    [routerLink]="['/details']"
+    class="col-span-12 w-full sm:col-span-6 lg:col-span-4 bg-black/30 text-white border border-action rounded-2xl flex flex-col justify-center gap-2 p-4 cursor-pointer hover:border-primary"
+  >
+    <div class="flex items-center justify-between w-full">
+      <h2 class="text-lg font-semibold">Bug Ticket</h2>
+      <svg
+        (click)="showConfirmPopup = true; $event.stopPropagation()"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-trash-icon lucide-trash text-error w-5 h-4 hover:text-red-600 cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+      >
+        <path d="M3 6h18" />
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      </svg>
+    </div>
+    <p class="text-sm text-gray-300 line-clamp-2 h-[44px]">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut alias quas
+      veniam quisquam rem ipsam, consectetur in. Omnis recusandae provident
+      nisi, maxime quibusdam magnam tempore repellendus nemo natus, illum
+      cumque.
+    </p>
+    <div
+      class="w-full h-px bg-gradient-to-r from-screen via-action to-screen"
+    ></div>
+    <div class="flex items-center justify-between w-full">
+      <h2 class="">OnHold</h2>
+      <span class="w-3 h-3 bg-onhold rounded-full"></span>
+    </div>
+  </div>
+  <!-- /3 -->
+  <div
+    [routerLink]="['/details']"
+    class="col-span-12 w-full sm:col-span-6 lg:col-span-4 bg-black/30 text-white border border-action rounded-2xl flex flex-col justify-center gap-2 p-4 cursor-pointer hover:border-primary"
+  >
+    <div class="flex items-center justify-between w-full">
+      <h2 class="text-lg font-semibold">Bug Ticket</h2>
+      <svg
+        (click)="showConfirmPopup = true; $event.stopPropagation()"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-trash-icon lucide-trash text-error w-5 h-4 hover:text-red-600 cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+      >
+        <path d="M3 6h18" />
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      </svg>
+    </div>
+    <p class="text-sm text-gray-300 line-clamp-2 h-[44px]">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut alias quas
+      veniam quisquam rem ipsam, consectetur in. Omnis recusandae provident
+      nisi, maxime quibusdam magnam tempore repellendus nemo natus, illum
+      cumque.
+    </p>
+    <div
+      class="w-full h-px bg-gradient-to-r from-screen via-action to-screen"
+    ></div>
+    <div class="flex items-center justify-between w-full">
+      <h2 class="">Planning</h2>
+      <span class="w-3 h-3 bg-planning rounded-full"></span>
+    </div>
+  </div>
+  <!-- /4 -->
+  <div
+    [routerLink]="['/details']"
+    class="col-span-12 w-full sm:col-span-6 lg:col-span-4 bg-black/30 text-white border border-action rounded-2xl flex flex-col justify-center gap-2 p-4 cursor-pointer hover:border-primary"
+  >
+    <div class="flex items-center justify-between w-full">
+      <h2 class="text-lg font-semibold">Bug Ticket</h2>
+      <svg
+        (click)="showConfirmPopup = true; $event.stopPropagation()"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="lucide lucide-trash-icon lucide-trash text-error w-5 h-4 hover:text-red-600 cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+      >
+        <path d="M3 6h18" />
+        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      </svg>
+    </div>
+    <p class="text-sm text-gray-300 line-clamp-2 h-[44px]">
+      Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut alias quas
+      veniam quisquam rem ipsam, consectetur in. Omnis recusandae provident
+      nisi, maxime quibusdam magnam tempore repellendus nemo natus, illum
+      cumque.
+    </p>
+    <div
+      class="w-full h-px bg-gradient-to-r from-screen via-action to-screen"
+    ></div>
+    <div class="flex items-center justify-between w-full">
+      <h2 class="">Cancelled</h2>
+      <span class="w-3 h-3 bg-cancelled rounded-full"></span>
+    </div>
+  </div>
+  <!-- /5 -->
+</section>

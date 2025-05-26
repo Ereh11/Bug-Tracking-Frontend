@@ -24,6 +24,7 @@
     "@angular/ssr": "^19.1.5",
     "bug-tracking-system": "file:",
     "express": "^4.18.2",
+    "lucide-angular": "^0.507.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

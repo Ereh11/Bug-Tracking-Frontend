@@ -1,3 +1,5 @@
+const { Action } = require("rxjs/internal/scheduler/Action");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   mode: "jit",
@@ -15,7 +17,7 @@ module.exports = {
         },
         scanner: {
           "0%": { "stroke-dashoffset": "0" },
-          "100%": { "stroke-dashoffset": "1005" }, // sum of dash+gap
+          "100%": { "stroke-dashoffset": "1005" },
         },
         fadeInScale: {
           "0%": { opacity: "0", transform: "scale(0.5)" },
@@ -34,8 +36,8 @@ module.exports = {
         "neon-pulse": "neonPulse 2s ease-in-out infinite",
         "sweep-light": "sweep 1.5s linear infinite",
         scanner: "scanner 6s linear infinite",
-        "spin-slow": "spin 8s linear infinite", // slow spin for image
-        "fade-in-scale": "fadeInScale 1.5s ease-out forwards", // text appear and scale
+        "spin-slow": "spin 8s linear infinite",
+        "fade-in-scale": "fadeInScale 1.5s ease-out forwards",
         "move-left": "moveLeft 1s ease-in-out forwards",
         "move-right": "moveRight 1s ease-in-out forwards",
       },
@@ -43,12 +45,22 @@ module.exports = {
         screen: "#0F0020",
         "purple-0": "#77207a",
         "purple-1": "#6a3cb0",
-        "purple-6": "#b22084",
-        "purple-2": "#551b98",
-        "purple-3": " #691ebe",
+        // "purple-6": "#b22084",
+        // "purple-2": "#551b98",
+        // "purple-3": " #691ebe",
         "purple-4": "#36166f",
         "purple-5": "#ca19a4",
-        error: "#e11d48",
+        primary: "#9a00a8",
+        action: "#48294B",
+        error: "#C20C06",
+        hover: "#48294C",
+        completed: "#08992F",
+        planning: "#B8D244",
+        inprogress: "#739AFF",
+        onhold: "#6E6E6E",
+        cancelled: "#FB4B4E",
+        Manager: "#4453D2",
+        member: "#2f1b32",
       },
     },
   },

@@ -1,0 +1,85 @@
+<button
+  (click)="showAddProjectPopup = true"
+  class="w-full flex h-10 px-2 items-center justify-center md:justify-normal gap-1 text-white rounded-lg bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-ou active:scale-95"
+>
+  <!-- <lucide-icon name="Plus"></lucide-icon> -->
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-plus-icon lucide-plus"
+  >
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </svg>
+  <span class="font-medium">Add Project</span>
+</button>
+
+<!-- popup -->
+
+<div
+  *ngIf="showAddProjectPopup"
+  class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+>
+  <div
+    class="bg-screen text-white p-6 rounded-xl shadow-lg z-50 w-[90%] sm:w-[500px]"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold">Create New Project</h2>
+      <i
+        (click)="cancelAddProject()"
+        class="fa-solid fa-xmark text-gray-300 hover:text-error active:scale-95 cursor-pointer"
+      ></i>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Project Name</label>
+        <input
+          type="text"
+          [(ngModel)]="newProject.name"
+          (input)="showNameError = false"
+          placeholder="Enter project name"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+        />
+        <p
+          class="text-sm font-semibold text-error mt-1"
+          [class.invisible]="!showNameError"
+        >
+          Project name is required.
+        </p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Description</label>
+        <textarea
+          [(ngModel)]="newProject.description"
+          placeholder="Enter project description"
+          rows="4"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+        ></textarea>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button
+        (click)="createProject()"
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+      >
+        Create Project
+      </button>
+      <button
+        (click)="cancelAddProject()"
+        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

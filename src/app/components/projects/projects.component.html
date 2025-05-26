@@ -1,0 +1,31 @@
+<div
+  class="container flex flex-col max-w-7xl mx-auto min-h-screen gap-10 py-16 px-6"
+>
+  <!-- user-Data -->
+  <app-user-role />
+  <!-- end user -->
+
+  <!-- filtering & search -->
+  <section
+    class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full"
+  >
+    <!-- Add project for admin -->
+    <app-add-btn />
+    <!-- /Add project for admin -->
+
+    <!-- right section -->
+    <app-filter />
+    <!-- /right section -->
+  </section>
+  <!-- /filtering & search -->
+
+  <!-- projects list -->
+  <app-project />
+  <!-- /project-list -->
+
+  <!-- pagination -->
+  <app-pagination />
+  <!-- /pagination -->
+
+  <!--  -->
+</div>
