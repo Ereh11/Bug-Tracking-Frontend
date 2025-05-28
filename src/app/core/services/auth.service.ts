@@ -1,5 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpErrorResponse,
+} from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 
@@ -32,7 +36,7 @@ export interface RegisterRequest {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = 'http://localhost:5279/api';
@@ -63,7 +67,7 @@ export class AuthService {
     body?: any
   ): Observable<T> {
     return this.executeRequest<T>(method, url, body).pipe(
-      catchError(error => {
+      catchError((error) => {
         if (error instanceof HttpErrorResponse && error.status === 401) {
           return this.handleTokenRefresh<T>(method, url, body);
         }
@@ -107,7 +111,7 @@ export class AuthService {
           this.isRefreshing = false;
           return this.executeRequest<T>(method, url, body);
         }),
-        catchError(error => {
+        catchError((error) => {
           this.isRefreshing = false;
           this.logout();
           return throwError(() => error);
@@ -115,13 +119,13 @@ export class AuthService {
       );
     } else {
       // Wait for refresh to complete then retry
-      return new Observable(observer => {
+      return new Observable((observer) => {
         const checkRefresh = () => {
           if (!this.isRefreshing) {
             this.executeRequest<T>(method, url, body).subscribe({
-              next: result => observer.next(result),
-              error: err => observer.error(err),
-              complete: () => observer.complete()
+              next: (result) => observer.next(result),
+              error: (err) => observer.error(err),
+              complete: () => observer.complete(),
             });
           } else {
             setTimeout(checkRefresh, 100);
@@ -135,7 +139,7 @@ export class AuthService {
   private getAuthHeaders(): HttpHeaders {
     const token = this.getToken();
     let headers = new HttpHeaders({
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     });
 
     if (token) {
@@ -147,9 +151,10 @@ export class AuthService {
 
   // Login method
   login(loginRequest: LoginRequest): Observable<User> {
-    return this.http.post<ApiResponse<User>>(`${this.apiUrl}/users/login`, loginRequest)
+    return this.http
+      .post<ApiResponse<User>>(`${this.apiUrl}/users/login`, loginRequest)
       .pipe(
-        map(response => {
+        map((response) => {
           if (response.success && response.data) {
             const userData = response.data;
             this.setAuthCookie(userData);
@@ -159,27 +164,32 @@ export class AuthService {
             throw new Error(response.message || 'Login failed');
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.error('Login error', error);
-          return throwError(() => new Error(error.error?.message || 'Login failed'));
+          return throwError(
+            () => new Error(error.error?.message || 'Login failed')
+          );
         })
       );
   }
 
   // Register method
   register(registerRequest: RegisterRequest): Observable<any> {
-    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/users/register`, registerRequest)
+    return this.http
+      .post<ApiResponse<any>>(`${this.apiUrl}/users/register`, registerRequest)
       .pipe(
-        map(response => {
+        map((response) => {
           if (response.success) {
             return response.data;
           } else {
             throw new Error(response.message || 'Registration failed');
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.error('Registration error', error);
-          return throwError(() => new Error(error.error?.message || 'Registration failed'));
+          return throwError(
+            () => new Error(error.error?.message || 'Registration failed')
+          );
         })
       );
   }
@@ -189,7 +199,7 @@ export class AuthService {
     this.makeAuthenticatedRequest('POST', '/users/logout', {}).subscribe({
       next: () => this.completeLogout(),
       error: () => this.completeLogout(),
-      complete: () => console.log('Logout completed')
+      complete: () => console.log('Logout completed'),
     });
   }
 
@@ -204,11 +214,12 @@ export class AuthService {
   }
 
   refreshToken(): Observable<User> {
-    return this.http.post<ApiResponse<User>>(`${this.apiUrl}/users/refresh-token`, {
-      refreshToken: this.currentUserValue?.refreshToken
-    })
+    return this.http
+      .post<ApiResponse<User>>(`${this.apiUrl}/users/refresh-token`, {
+        refreshToken: this.currentUserValue?.refreshToken,
+      })
       .pipe(
-        map(response => {
+        map((response) => {
           if (response.success && response.data) {
             const userData = response.data;
             this.setAuthCookie(userData);
@@ -218,7 +229,7 @@ export class AuthService {
             throw new Error(response.message || 'Token refresh failed');
           }
         }),
-        catchError(error => {
+        catchError((error) => {
           console.error('Token refresh error', error);
           this.completeLogout();
           return throwError(() => new Error('Token refresh failed'));
@@ -234,9 +245,14 @@ export class AuthService {
 
   private setCookie(name: string, value: string, days: number): void {
     const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = '; expires=' + date.toUTCString();
-    document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/; SameSite=Strict; Secure';
+    document.cookie =
+      name +
+      '=' +
+      encodeURIComponent(value) +
+      expires +
+      '; path=/; SameSite=Strict; Secure';
   }
 
   private getCookie(name: string): string | null {
@@ -245,12 +261,16 @@ export class AuthService {
     for (let i = 0; i < ca.length; i++) {
       let c = ca[i];
       while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+      if (c.indexOf(nameEQ) === 0)
+        return decodeURIComponent(c.substring(nameEQ.length, c.length));
     }
     return null;
   }
 
   private deleteCookie(name: string): void {
-    document.cookie = name + '=' + '; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
+    document.cookie =
+      name +
+      '=' +
+      '; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Strict; Secure';
   }
 }

@@ -91,35 +91,43 @@ export class SignInComponent implements OnInit {
 
     const loginRequest: LoginRequest = {
       email: this.signInForm.value.email,
-      password: this.signInForm.value.password
+      password: this.signInForm.value.password,
     };
 
-    this.authService.login(loginRequest)
-      .subscribe({
-        next: (user) => {
-          this.isLoading = false;
-          console.log('Login successful:', user);
-          // Navigate to dashboard or home page after successful login
-          this.leaveAndNavigate('/project');
-        },
-        error: (error) => {
-          this.isLoading = false;
-          console.error('Login erro');
-          console.error('Login error:', error);
-          this.authError = error.message || 'Login failed';
+    this.authService.login(loginRequest).subscribe({
+      next: (user) => {
+        this.isLoading = false;
+        console.log('Login successful:', user);
+        // Navigate to dashboard or home page after successful login
+        this.leaveAndNavigate('/project');
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Login erro');
+        console.error('Login error:', error);
+        this.authError = error.message || 'Login failed';
 
-          // Handle different error scenarios
-          if (error.status === 0) {
-            this.authError = 'Unable to connect to the server. Please check your internet connection or try again later.';
-          } else if (error.status === 401 || error.message?.includes('Invalid credentials') || error.message?.includes('not found')) {
-            this.authError = 'Invalid email or password';
-
-          } else if (error.status === 403 || error.message?.includes('locked') || error.message?.includes('disabled')) {
-            this.authError = 'Account is locked or disabled. Please contact support.';
-          } else {
-            this.authError = 'Authentication failed. Please try again.';
-          }
+        // Handle different error scenarios
+        if (error.status === 0) {
+          this.authError =
+            'Unable to connect to the server. Please check your internet connection or try again later.';
+        } else if (
+          error.status === 401 ||
+          error.message?.includes('Invalid credentials') ||
+          error.message?.includes('not found')
+        ) {
+          this.authError = 'Invalid email or password';
+        } else if (
+          error.status === 403 ||
+          error.message?.includes('locked') ||
+          error.message?.includes('disabled')
+        ) {
+          this.authError =
+            'Account is locked or disabled. Please contact support.';
+        } else {
+          this.authError = 'Authentication failed. Please try again.';
         }
-      });
+      },
+    });
   }
 }
