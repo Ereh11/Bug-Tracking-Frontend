@@ -3,12 +3,22 @@
   <div class="relative bg-black/30 w-full md:w-64 h-10">
     <input
       type="text"
-      placeholder="Search..."
+      placeholder="Search projects..."
+      [(ngModel)]="searchTerm"
+      (input)="onSearchChange()"
       class="w-full h-full pl-10 pr-4 py-2 text-sm font-medium text-white bg-transparent border border-action rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
     />
     <i
       class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
     ></i>
+    <!-- Clear button when search has content -->
+    <button
+      *ngIf="searchTerm"
+      (click)="clearSearch()"
+      class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+    >
+      <i class="fa-solid fa-times text-xs"></i>
+    </button>
   </div>
   <!-- /search -->
 

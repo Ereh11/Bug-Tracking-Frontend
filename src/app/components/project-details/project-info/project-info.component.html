@@ -1,13 +1,38 @@
 <section class="p-4 flex flex-col gap-4 border border-action rounded-md">
-  <!-- name & Edit button -->
-  <div class="flex justify-between items-center flex-col md:flex-row gap-2">
-    <h1 class="text-3xl font-bold text-hover">Project Name</h1>
-    <app-edit-project />
+  <!-- Loading state -->
+  <div *ngIf="loading" class="text-center py-4">
+    <p class="text-gray-400">Loading project information...</p>
   </div>
-  <!-- description -->
-  <p class="text-gray-500">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-  </p>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="text-center py-4">
+    <p class="text-red-400">Error: {{ error }}</p>
+  </div>
+
+  <!-- Project content -->
+  <div *ngIf="!loading && !error && projectInfo">
+    <!-- name & Edit button -->
+    <div class="flex justify-between items-center flex-col md:flex-row gap-2">
+      <h1 class="text-3xl font-bold text-hover">
+        {{ projectName }}
+      </h1>
+      <app-edit-project 
+        *ngIf="canShowEditButton"
+        [currentName]="projectInfo.name"
+        [currentDescription]="projectInfo.description || ''"
+        [projectId]="projectInfo.id"
+        (updateProject)="onProjectUpdated($event)"
+      />
+    </div>
+    
+    <!-- description -->
+    <p class="text-gray-500">
+      {{ projectDescription }}
+    </p>
+  </div>
+
+  <!-- No project state -->
+  <div *ngIf="!loading && !error && !projectInfo" class="text-center py-4">
+    <p class="text-gray-400">No project information available</p>
+  </div>
 </section>

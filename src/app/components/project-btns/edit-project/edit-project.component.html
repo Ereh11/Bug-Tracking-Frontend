@@ -6,7 +6,6 @@
 </button>
 
 <!-- popup -->
-
 <div
   *ngIf="showEditProjectPopup"
   class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center"
@@ -23,44 +22,98 @@
     </div>
 
     <div class="space-y-4">
+      <!-- Project Name Field -->
       <div>
-        <label class="block text-sm font-medium mb-1">Project Name</label>
-        <input
-          type="text"
-          [(ngModel)]="editProject.name"
-          (input)="showNameError = false"
-          placeholder="Enter project name"
-          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
-        />
-        <p
-          class="text-sm font-semibold text-error mt-1"
-          [class.invisible]="!showNameError"
-        >
-          Project name is required.
-        </p>
+        <label class="block text-sm font-medium mb-2 text-gray-200">
+          Project Name <span class="text-red-400">*</span>
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="editProject.name"
+            (input)="onNameInput()"
+            (blur)="validateName()"
+            placeholder="Enter project name"
+            [class]="'w-full p-3 rounded-lg bg-white/10 text-white border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 ' + 
+                     (nameErrors.length > 0 ? 'border-red-400 focus:border-red-400' : 'border-gray-500 focus:border-primary')"
+            [disabled]="isSubmitting"
+          />
+          <div *ngIf="nameErrors.length > 0" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <i class="fa-solid fa-exclamation-circle text-red-400"></i>
+          </div>
+        </div>
+        
+        <!-- Name Error Messages -->
+        <div *ngIf="nameErrors.length > 0" class="mt-2 space-y-1">
+          <div *ngFor="let error of nameErrors" class="flex items-center gap-2 text-red-400 text-sm animate-fade-in">
+            <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+            {{ error }}
+          </div>
+        </div>
       </div>
 
+      <!-- Description Field -->
       <div>
-        <label class="block text-sm font-medium mb-1">Description</label>
-        <textarea
-          [(ngModel)]="editProject.description"
-          placeholder="Enter project description"
-          rows="4"
-          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
-        ></textarea>
+        <label class="block text-sm font-medium mb-2 text-gray-200">
+          Description
+        </label>
+        <div class="relative">
+          <textarea
+            [(ngModel)]="editProject.description"
+            (input)="onDescriptionInput()"
+            (blur)="validateDescription()"
+            placeholder="Enter project description (optional)"
+            rows="4"
+            [class]="'w-full p-3 rounded-lg bg-white/10 text-white border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none ' + 
+                     (descriptionErrors.length > 0 ? 'border-red-400 focus:border-red-400' : 'border-gray-500 focus:border-primary')"
+            [disabled]="isSubmitting"
+          ></textarea>
+          <div *ngIf="descriptionErrors.length > 0" class="absolute right-3 top-3">
+            <i class="fa-solid fa-exclamation-circle text-red-400"></i>
+          </div>
+        </div>
+        
+        <!-- Description Error Messages -->
+        <div *ngIf="descriptionErrors.length > 0" class="mt-2 space-y-1">
+          <div *ngFor="let error of descriptionErrors" class="flex items-center gap-2 text-red-400 text-sm animate-fade-in">
+            <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+            {{ error }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Error Message -->
+      <div *ngIf="submitError" class="bg-red-900/30 border border-red-400 rounded-lg p-3 animate-fade-in">
+        <div class="flex items-center gap-2 text-red-400 text-sm">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          {{ submitError }}
+        </div>
       </div>
     </div>
 
-    <div class="flex justify-end gap-2 mt-6">
+    <div class="flex justify-end gap-3 mt-6">
       <button
         (click)="submitEditProject()"
-        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+        [disabled]="hasValidationErrors || isSubmitting"
+        [class]="'px-6 py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 ' + 
+                 (hasValidationErrors || isSubmitting 
+                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+                   : 'bg-primary text-white hover:bg-primary/80 active:scale-95 cursor-pointer')"
       >
-        Change Project
+        <span *ngIf="isSubmitting" class="flex items-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Updating...
+        </span>
+        <span *ngIf="!isSubmitting">Update Project</span>
       </button>
+      
       <button
         (click)="cancelEditProject()"
-        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95"
+        [disabled]="isSubmitting"
+        [class]="'px-6 py-2.5 rounded-lg font-medium border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400/50 ' + 
+                 (isSubmitting 
+                   ? 'text-gray-500 border-gray-600 cursor-not-allowed' 
+                   : 'text-white border-gray-400 hover:bg-gray-600/20 active:scale-95 cursor-pointer')"
       >
         Cancel
       </button>

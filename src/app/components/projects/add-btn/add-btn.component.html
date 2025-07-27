@@ -1,8 +1,9 @@
+<!-- Only show the button if user is admin -->
 <button
-  (click)="showAddProjectPopup = true"
-  class="w-full flex h-10 px-2 items-center justify-center md:justify-normal gap-1 text-white rounded-lg bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-ou active:scale-95"
+  *ngIf="isCurrentUserAdmin()"
+  (click)="openAddProjectPopup()"
+  class="w-full flex h-10 px-2 items-center justify-center md:justify-normal gap-1 text-white rounded-lg bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-out active:scale-95"
 >
-  <!-- <lucide-icon name="Plus"></lucide-icon> -->
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="24"
@@ -22,13 +23,12 @@
 </button>
 
 <!-- popup -->
-
 <div
   *ngIf="showAddProjectPopup"
   class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center"
 >
   <div
-    class="bg-screen text-white p-6 rounded-xl shadow-lg z-50 w-[90%] sm:w-[500px]"
+    class="bg-screen text-white p-6 rounded-xl shadow-lg z-50 w-[90%] sm:w-[600px] max-h-[90vh] overflow-hidden flex flex-col"
   >
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-xl font-bold">Create New Project</h2>
@@ -38,45 +38,164 @@
       ></i>
     </div>
 
-    <div class="space-y-4">
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="mb-4 p-4 bg-gradient-to-r from-error/20 to-red-500/20 border border-error rounded-lg animate-shake">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-exclamation-triangle text-error text-lg animate-pulse"></i>
+        <div>
+          <p class="text-error text-sm font-semibold">Error Creating Project</p>
+          <p class="text-error/80 text-xs mt-1">{{ errorMessage }}</p>
+        </div>
+        <button 
+          (click)="errorMessage = null" 
+          class="ml-auto text-error hover:text-red-300 transition-colors"
+        >
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="space-y-4 max-h-96 overflow-y-auto">
+      <!-- Project Name -->
       <div>
-        <label class="block text-sm font-medium mb-1">Project Name</label>
+        <label class="block text-sm font-medium mb-1">Project Name *</label>
         <input
           type="text"
           [(ngModel)]="newProject.name"
-          (input)="showNameError = false"
-          placeholder="Enter project name"
-          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+          (input)="validateName(); errorMessage = null"
+          placeholder="Enter project name (minimum 2 characters)"
+          [disabled]="isCreating"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          [class.border-error]="showNameError"
         />
         <p
           class="text-sm font-semibold text-error mt-1"
           [class.invisible]="!showNameError"
         >
-          Project name is required.
+          {{ nameErrorMessage }}
         </p>
       </div>
 
+      <!-- Description -->
       <div>
-        <label class="block text-sm font-medium mb-1">Description</label>
+        <label class="block text-sm font-medium mb-1">Description *</label>
         <textarea
           [(ngModel)]="newProject.description"
-          placeholder="Enter project description"
-          rows="4"
-          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
+          (input)="validateDescription(); errorMessage = null"
+          placeholder="Enter project description (minimum 2 characters)"
+          rows="3"
+          [disabled]="isCreating"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          [class.border-error]="showDescriptionError"
         ></textarea>
+        <p
+          class="text-sm font-semibold text-error mt-1"
+          [class.invisible]="!showDescriptionError"
+        >
+          {{ descriptionErrorMessage }}
+        </p>
+      </div>
+
+      <!-- Date Range -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Start Date *</label>
+          <input
+            type="date"
+            [(ngModel)]="newProject.startDate"
+            (change)="onStartDateChange()"
+            [disabled]="isCreating"
+            [max]="getTodayDate()"
+            class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            [class.border-error]="showStartDateError"
+          />
+          <p
+            class="text-sm font-semibold text-error mt-1"
+            [class.invisible]="!showStartDateError"
+          >
+            Start date must be today or in the past.
+          </p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">End Date *</label>
+          <input
+            type="date"
+            [(ngModel)]="newProject.endDate"
+            (change)="onEndDateChange()"
+            [min]="getMinEndDate()"
+            [disabled]="isCreating"
+            class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            [class.border-error]="showEndDateError"
+          />
+          <p
+            class="text-sm font-semibold text-error mt-1"
+            [class.invisible]="!showEndDateError"
+          >
+            {{ endDateErrorMessage }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-sm font-medium mb-1">Project Status</label>
+        <select
+          [(ngModel)]="newProject.status"
+          [disabled]="isCreating"
+          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <option value="1" class="bg-screen text-white">Planning</option>
+          <option value="2" class="bg-screen text-white">In Progress</option>
+          <option value="3" class="bg-screen text-white">On Hold</option>
+          <option value="4" class="bg-screen text-white">Completed</option>
+          <option value="5" class="bg-screen text-white">Cancelled</option>
+        </select>
+      </div>
+
+      <!-- Active Status -->
+      <div class="flex items-center space-x-3">
+        <input
+          type="checkbox"
+          id="isActive"
+          [(ngModel)]="newProject.isActive"
+          [disabled]="isCreating"
+          class="w-4 h-4 text-primary bg-white/10 border-gray-500 rounded focus:ring-primary focus:ring-2"
+        />
+        <label for="isActive" class="text-sm font-medium">Set project as active</label>
+      </div>
+
+      <!-- Project Configuration Summary -->
+      <div class="bg-white/5 p-3 rounded-lg border border-white/10">
+        <p class="text-xs text-gray-400 mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-info-circle"></i>
+          Project Summary:
+        </p>
+        <div class="text-xs text-gray-300 space-y-1">
+          <div class="flex justify-between">
+            <span>Duration:</span>
+            <span>{{ getProjectDuration() }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Status:</span>
+            <span class="capitalize">{{ getStatusName(newProject.status) }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="flex justify-end gap-2 mt-6">
       <button
         (click)="createProject()"
-        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+        [disabled]="isCreating"
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
       >
-        Create Project
+        <span *ngIf="isCreating" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-b-transparent"></span>
+        {{ isCreating ? 'Creating...' : 'Create Project' }}
       </button>
       <button
         (click)="cancelAddProject()"
-        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95"
+        [disabled]="isCreating"
+        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Cancel
       </button>

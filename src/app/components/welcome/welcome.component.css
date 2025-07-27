@@ -1,0 +1,56 @@
+/* welcome.component.css */
+
+/* Only adding styles that complement your existing Tailwind animations */
+
+/* Glassmorphism effect for cards */
+.backdrop-blur-sm {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Smooth transitions for all elements */
+* {
+  transition: all 0.3s ease;
+}
+
+/* Additional animation delays that work with your existing system */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 1s ease-out;
+}
+
+/* Custom animation for the welcome text that uses your fade-in-scale base */
+.animate-welcome-text {
+  animation: fadeInScale 1.5s ease-out forwards;
+}
+
+/* Enhance your existing animations with additional utility classes */
+.animation-delay-75 {
+  animation-delay: 75ms;
+}
+
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}

@@ -31,6 +31,60 @@ module.exports = {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(100%)" },
         },
+        twinkle: {
+          '0%, 100%': { 
+            opacity: '0', 
+            transform: 'scale(0)' 
+          },
+          '50%': { 
+            opacity: '1', 
+            transform: 'scale(1)' 
+          },
+        },
+        float: {
+          '0%, 100%': { 
+            transform: 'translateY(0px)' 
+          },
+          '50%': { 
+            transform: 'translateY(-10px)' 
+          },
+        },
+        'gradient-shift': {
+          '0%, 100%': { 
+            'background-position': '0% 50%' 
+          },
+          '50%': { 
+            'background-position': '100% 50%' 
+          },
+        },
+        shake: {
+          '0%, 100%': { 
+            transform: 'translateX(0)' 
+          },
+          '25%': { 
+            transform: 'translateX(-5px)' 
+          },
+          '75%': { 
+            transform: 'translateX(5px)' 
+          },
+        },
+        'pulse-dot': {
+          '0%, 100%': { 
+            opacity: '1', 
+            transform: 'scale(1)' 
+          },
+          '50%': { 
+            opacity: '0.5', 
+            transform: 'scale(0.8)' 
+          },
+        },
+      },
+      animationDelay: {
+        '75': '75ms',
+        '100': '100ms',
+        '150': '150ms',
+        '200': '200ms',
+        '300': '300ms',
       },
       animation: {
         "neon-pulse": "neonPulse 2s ease-in-out infinite",

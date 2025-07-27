@@ -1,28 +1,64 @@
-<div
-  class="container flex flex-col max-w-7xl mx-auto min-h-screen gap-10 py-16 px-6"
->
-  <!-- project Info -->
-  <app-project-info />
-  <!-- /project Info-->
-
-  <!-- Project Manager -->
-  <app-project-manager />
-  <!-- /Project Manager -->
-
-  <section class="grid grid-cols-12 w-full gap-4 content-center text-white">
-    <!-- members section -->
-    <div
-      class="col-span-12 lg:col-span-5 p-4 flex flex-col gap-4 border border-action rounded-md"
-    >
-      <app-project-members />
+<!-- project-details.component.html -->
+<div class="container flex flex-col max-w-7xl mx-auto min-h-screen gap-10 py-16 px-6">
+  
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <div class="flex flex-col items-center gap-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <p class="text-white">Loading project details...</p>
     </div>
-    <!-- /Members section -->
+  </div>
 
-    <!-- project bugs -->
-    <div
-      class="col-span-12 lg:col-span-7 p-4 flex flex-col gap-4 border border-action rounded-md"
-    >
-      <app-project-bugs />
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="flex items-center justify-center py-20">
+    <div class="bg-red-900/20 border border-red-500 rounded-lg p-6 max-w-md w-full">
+      <div class="flex items-center gap-3 mb-4">
+        <i class="fa-solid fa-exclamation-triangle text-red-500 text-xl"></i>
+        <h3 class="text-red-400 font-semibold">Error Loading Project</h3>
+      </div>
+      <p class="text-red-300 mb-4">{{ error }}</p>
+      <div class="flex gap-2">
+        <button 
+          (click)="refreshProject()" 
+          class="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+        >
+          <i class="fa-solid fa-refresh mr-2"></i>Try Again
+        </button>
+      </div>
     </div>
-  </section>
+  </div>
+
+  <!-- Project Content (when loaded successfully) -->
+  <ng-container *ngIf="!loading && !error">
+    <!-- Project Info -->
+    <app-project-info />
+    <!-- /Project Info-->
+
+    <!-- Project Manager -->
+    <app-project-manager />
+    <!-- /Project Manager -->
+
+    <section class="grid grid-cols-12 w-full gap-4 content-center text-white">
+      <!-- Members section -->
+      <div class="col-span-12 lg:col-span-5 p-4 flex flex-col gap-4 border border-action rounded-md">
+        <app-project-members />
+      </div>
+      <!-- /Members section -->
+
+      <!-- Project bugs -->
+      <div class="col-span-12 lg:col-span-7 p-4 flex flex-col gap-4 border border-action rounded-md">
+        <app-project-bugs />
+      </div>
+    </section>
+
+    <!-- Refresh Button -->
+    <div class="flex justify-end">
+      <button 
+        (click)="refreshProject()" 
+        class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
+      >
+        <i class="fa-solid fa-refresh mr-2"></i>Refresh Data
+      </button>
+    </div>
+  </ng-container>
 </div>

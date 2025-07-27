@@ -1,5 +1,5 @@
-<button
-  (click)="openChangeMemberPopup()"
+﻿<button
+  (click)="openAddMemberModal()"
   class="flex items-center justify-center md:justify-normal gap-1 text-white px-2 py-2 rounded-md bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-out active:scale-95"
 >
   <svg
@@ -20,71 +20,96 @@
   <span class="font-medium">Add Member</span>
 </button>
 
-<!-- Change Member Popup -->
+<!-- Add Member Modal -->
 <div
-  *ngIf="showChangeMemberPopup"
-  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+  *ngIf="showAddMemberModal"
+  class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
 >
-  <div class="bg-screen text-white p-6 rounded-xl w-[90%] max-w-md shadow-xl">
-    <div class="flex justify-between items-center mb-4">
+  <div class="bg-screen text-white p-6 rounded-xl w-[90%] max-w-md max-h-[90vh] shadow-xl flex flex-col">
+    <div class="flex justify-between items-center mb-4 flex-shrink-0">
       <h2 class="text-xl font-bold">Add Project Member</h2>
       <button
-        (click)="closePopup()"
+        (click)="closeAddMemberModal()"
         class="text-gray-300 hover:text-error active:scale-95"
       >
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <p class="mb-4 text-sm text-gray-300">
-      Select users to add to this project.
-    </p>
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex-shrink-0">
+      {{ errorMessage }}
+    </div>
 
-    <div
-      *ngFor="let member of teamMembers"
-      class="flex items-center gap-3 mb-3 cursor-pointer p-2 rounded-md transition"
-      (click)="selectMember(member)"
-    >
-      <input
-        type="checkbox"
-        [checked]="selectedMembers.includes(member)"
-        (click)="$event.stopPropagation(); selectMember(member)"
-        class="w-4 h-4 rounded-xl border border-primary accent-primary bg-screen cursor-pointer"
-      />
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-8 text-gray-300 flex-shrink-0">
+      <i class="fa-solid fa-spinner fa-spin text-primary text-2xl mb-2"></i>
+      <p>Loading users...</p>
+    </div>
 
-      <div class="flex-1">
-        <div class="flex items-center gap-2">
-          <div
-            class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-            [ngClass]="member.color"
-          >
-            {{ member.name[0] }}
+    <!-- Content when not loading -->
+    <div *ngIf="!isLoading" class="flex flex-col flex-1 min-h-0">
+      <p class="mb-4 text-sm text-gray-300 flex-shrink-0">
+        Select users to add to this project.
+      </p>
+
+      <!-- No available users -->
+      <div *ngIf="availableUsers.length === 0" class="text-center py-8 text-gray-300 flex-shrink-0">
+        <i class="fa-solid fa-users-slash text-2xl mb-2"></i>
+        <p>No available users to add</p>
+      </div>
+
+      <!-- Available users list -->
+      <div *ngIf="availableUsers.length > 0" class="flex-1 overflow-y-auto mb-4 min-h-0">
+        <div
+          *ngFor="let user of availableUsers"
+          class="flex items-center gap-3 mb-3 cursor-pointer p-2 rounded-md transition hover:bg-member"
+          [class.bg-blue-900]="selectedUserId === user.id"
+          [class.bg-opacity-30]="selectedUserId === user.id"
+          (click)="selectUser(user.id)"
+        >
+          <input
+            type="radio"
+            [checked]="selectedUserId === user.id"
+            [value]="user.id"
+            name="selectedUser"
+            (click)="$event.stopPropagation(); selectUser(user.id)"
+            class="w-4 h-4 accent-primary cursor-pointer"
+          />
+
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white bg-primary">
+            {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
           </div>
-          <div>
-            <p class="font-semibold">{{ member.name }}</p>
-            <p class="text-sm text-gray-400">{{ member.email }}</p>
+
+          <div class="flex-1">
+            <p class="font-semibold">{{ user.firstName }} {{ user.lastName }}</p>
+            <p class="text-sm text-gray-400">{{ user.email }}</p>
+          </div>
+
+          <div class="flex gap-1 flex-wrap">
+            <span 
+              *ngFor="let role of user.roles" 
+              class="text-xs px-2 py-1 rounded-full font-semibold text-white bg-action"
+            >
+              {{ role.name }}
+            </span>
           </div>
         </div>
       </div>
-
-      <span
-        *ngFor="let badge of member.badgeColors; let i = index"
-        class="text-xs px-2 py-1 rounded-full font-semibold text-white ml-1"
-        [ngClass]="badge"
-      >
-        {{ member.roles[i] }}
-      </span>
     </div>
 
-    <div class="flex justify-end gap-2 mt-6">
+    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-600/30 flex-shrink-0">
       <button
-        (click)="confirmMemberChange()"
-        class="bg-primary px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+        (click)="addUserToProject()"
+        [disabled]="!selectedUserId || isAdding"
+        class="bg-primary px-4 py-2 rounded hover:bg-primary/80 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
       >
-        Add Selected
+        <i *ngIf="isAdding" class="fa-solid fa-spinner fa-spin"></i>
+        <i *ngIf="!isAdding" class="fa-solid fa-user-plus"></i>
+        {{ isAdding ? 'Adding...' : 'Add Selected' }}
       </button>
       <button
-        (click)="closePopup()"
+        (click)="closeAddMemberModal()"
         class="border border-action px-4 py-2 rounded hover:bg-member active:scale-95"
       >
         Cancel

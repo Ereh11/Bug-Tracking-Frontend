@@ -1,62 +1,114 @@
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-// import { FormsModule } from '@angular/forms';
+import { ProjectDetailsService, SystemUser } from '../../../Core/Services/project-details.service';
+import { AuthService } from '../../../Core/Services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-add-member',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [CommonModule], // Add CommonModule to imports
   templateUrl: './add-member.component.html',
   styleUrl: './add-member.component.css',
 })
 export class AddMemberComponent {
-  showChangeMemberPopup = false;
+  showAddMemberModal = false;
+  allUsers: SystemUser[] = [];
+  availableUsers: SystemUser[] = [];
+  selectedUserId: string | null = null;
+  isLoading = false;
+  errorMessage: string | null = null;
+  isAdding = false;
+  
+  private usersSubscription!: Subscription;
 
-  selectedMembers: any[] = [];
-  selectMember(member: any) {
-    const index = this.selectedMembers.indexOf(member);
-    if (index === -1) {
-      this.selectedMembers.push(member);
-    } else {
-      this.selectedMembers.splice(index, 1);
+  @Output() memberAdded = new EventEmitter<string>();
+
+  constructor(
+    private projectDetailsService: ProjectDetailsService,
+    private authService: AuthService
+  ) {}
+
+  openAddMemberModal() {
+    this.showAddMemberModal = true;
+    this.isLoading = true;
+    
+    // Subscribe to all users observable
+    this.usersSubscription = this.projectDetailsService.allUsers$.subscribe({
+      next: (users) => {
+        this.allUsers = users;
+        this.filterAvailableUsers();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.errorMessage = 'Failed to load users';
+        this.isLoading = false;
+        console.error(err);
+      }
+    });
+  }
+
+  closeAddMemberModal() {
+    this.showAddMemberModal = false;
+    this.selectedUserId = null;
+    this.errorMessage = null;
+    this.isAdding = false;
+    
+    if (this.usersSubscription) {
+      this.usersSubscription.unsubscribe();
     }
   }
 
-  teamMembers = [
-    {
-      name: 'John Smith',
-      email: 'john@example.com',
-      roles: ['Manager', 'Developer'],
-      badgeColors: ['text-Manager', 'text-[#08992F]'],
-      color: 'bg-Manager',
-    },
-    {
-      name: 'Emily Davis',
-      email: 'emily@example.com',
-      roles: ['Developer'],
-      badgeColors: ['text-[#08992F]'],
-      color: 'bg-[#059669]',
-    },
-    {
-      name: 'Michael Jones',
-      email: 'michael@example.com',
-      roles: ['Tester'],
-      badgeColors: ['text-[#B8D244]'],
-      color: 'bg-[#b45309]',
-    },
-  ];
+  private filterAvailableUsers() {
+    const currentProject = this.projectDetailsService.currentProjectData;
+    if (!currentProject) {
+      this.availableUsers = this.allUsers;
+      return;
+    }
 
-  openChangeMemberPopup() {
-    this.showChangeMemberPopup = true;
+    // Get IDs of current project members (including manager)
+    const existingMemberIds = new Set([
+      ...currentProject.members.map(member => member.id),
+      currentProject.manager.id
+    ]);
+
+    // Filter out users who are already members
+    this.availableUsers = this.allUsers.filter(user => 
+      !existingMemberIds.has(user.id) && user.isActive
+    );
   }
 
-  closePopup() {
-    this.showChangeMemberPopup = false;
-    this.selectedMembers = [];
+  selectUser(userId: string) {
+    this.selectedUserId = userId;
   }
 
-  confirmMemberChange() {
-    if (!this.selectedMembers.length) return;
-    console.log('Selected Members:', this.selectedMembers);
-    this.closePopup();
+  addUserToProject() {
+    if (!this.selectedUserId) {
+      this.errorMessage = 'Please select a user';
+      return;
+    }
+
+    const projectId = this.projectDetailsService.currentProjectData?.info?.id;
+    if (!projectId) {
+      this.errorMessage = 'Project not found';
+      return;
+    }
+
+    this.isAdding = true;
+    this.errorMessage = null;
+
+    this.projectDetailsService.addMemberToProject(projectId, this.selectedUserId, 'Added to project').subscribe({
+      next: () => {
+        this.memberAdded.emit(this.selectedUserId!);
+        this.closeAddMemberModal();
+        // Manually refresh project data
+        this.projectDetailsService.loadProject(projectId).subscribe();
+      },
+      error: (error) => {
+        this.errorMessage = error.message || 'Failed to add member to project';
+        this.isAdding = false;
+        console.error('Error adding member:', error);
+      }
+    });
   }
 }

@@ -1,0 +1,139 @@
+<!-- welcome.component.html -->
+<div class="min-h-screen flex items-center justify-center bg-screen relative overflow-hidden">
+  <!-- Animated Background Elements -->
+  <div class="absolute inset-0">
+    <!-- Floating Particles -->
+    <div class="absolute top-20 left-20 w-4 h-4 bg-purple-0/30 rounded-full animate-twinkle"></div>
+    <div class="absolute top-40 right-32 w-6 h-6 bg-purple-1/40 rounded-full animate-float"></div>
+    <div class="absolute bottom-32 left-40 w-3 h-3 bg-purple-5/30 rounded-full animate-twinkle animation-delay-200"></div>
+    <div class="absolute bottom-20 right-20 w-5 h-5 bg-primary/25 rounded-full animate-float animation-delay-300"></div>
+    
+    <!-- Gradient Orbs -->
+    <div class="absolute top-0 -left-40 w-80 h-80 bg-gradient-to-r from-purple-0/20 to-purple-5/20 rounded-full blur-3xl animate-pulse"></div>
+    <div class="absolute -bottom-40 -right-40 w-80 h-80 bg-gradient-to-r from-purple-1/20 to-primary/20 rounded-full blur-3xl animate-pulse animation-delay-150"></div>
+  </div>
+
+  <!-- Main Content Container -->
+  <div class="relative z-10 text-center max-w-4xl mx-auto px-8">
+    <!-- Success Icon -->
+    <div 
+      class="mx-auto mb-8 transition-all duration-1000 transform"
+      [ngClass]="{
+        'scale-100 opacity-100': showContent,
+        'scale-0 opacity-0': !showContent
+      }"
+    >
+      <div class="relative">
+        <!-- Outer Ring -->
+        <div class="w-32 h-32 mx-auto rounded-full border-4 border-completed flex items-center justify-center animate-spin-slow">
+          <!-- Inner Circle -->
+          <div class="w-24 h-24 bg-gradient-to-br from-completed to-planning rounded-full flex items-center justify-center shadow-lg">
+            <i class="fa-solid fa-check text-white text-4xl animate-pulse-dot"></i>
+          </div>
+        </div>
+        <!-- Glow Effect -->
+        <div class="absolute inset-0 w-32 h-32 mx-auto rounded-full bg-completed/20 blur-xl animate-pulse"></div>
+      </div>
+    </div>
+
+    <!-- Welcome Text -->
+    <div 
+      class="transition-all duration-1000 delay-300 transform"
+      [ngClass]="{
+        'translate-y-0 opacity-100': showContent,
+        'translate-y-8 opacity-0': !showContent
+      }"
+    >
+      <h1 class="text-5xl md:text-6xl font-bold text-white mb-4 animate-fade-in-scale">
+        Welcome Aboard!
+      </h1>
+      <div class="w-24 h-1 bg-gradient-to-r from-purple-1 to-purple-5 mx-auto mb-8 rounded-full"></div>
+    </div>
+
+    <!-- Success Message -->
+    <div 
+      class="transition-all duration-1000 delay-500 transform"
+      [ngClass]="{
+        'translate-y-0 opacity-100': showContent,
+        'translate-y-8 opacity-0': !showContent
+      }"
+    >
+      <p class="text-xl md:text-2xl text-purple-0/80 mb-8 leading-relaxed">
+        🎉 Your account has been created successfully! 🎉
+      </p>
+      <p class="text-lg text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed">
+        You're now part of the <span class="font-semibold text-primary">Track Your Bug</span> community. 
+        Get ready to streamline your project management and track issues like never before.
+      </p>
+    </div>
+
+    <!-- Features Preview -->
+    <div 
+      class="grid md:grid-cols-3 gap-6 mb-12 transition-all duration-1000 delay-700 transform"
+      [ngClass]="{
+        'translate-y-0 opacity-100': showContent,
+        'translate-y-8 opacity-0': !showContent
+      }"
+    >
+      <div class="bg-action/20 backdrop-blur-sm rounded-xl p-6 border border-purple-0/30 hover:bg-action/30 transition-all duration-300 hover:border-purple-1/50">
+        <i class="fa-solid fa-bug text-purple-5 text-3xl mb-4"></i>
+        <h3 class="text-white font-semibold mb-2">Bug Tracking</h3>
+        <p class="text-white/70 text-sm">Efficiently track and manage bugs in your projects</p>
+      </div>
+      
+      <div class="bg-action/20 backdrop-blur-sm rounded-xl p-6 border border-purple-0/30 hover:bg-action/30 transition-all duration-300 hover:border-purple-1/50">
+        <i class="fa-solid fa-users text-purple-5 text-3xl mb-4"></i>
+        <h3 class="text-white font-semibold mb-2">Team Collaboration</h3>
+        <p class="text-white/70 text-sm">Work together seamlessly with your team</p>
+      </div>
+      
+      <div class="bg-action/20 backdrop-blur-sm rounded-xl p-6 border border-purple-0/30 hover:bg-action/30 transition-all duration-300 hover:border-purple-1/50">
+        <i class="fa-solid fa-chart-line text-purple-5 text-3xl mb-4"></i>
+        <h3 class="text-white font-semibold mb-2">Progress Tracking</h3>
+        <p class="text-white/70 text-sm">Monitor project progress with detailed analytics</p>
+      </div>
+    </div>
+
+    <!-- CTA Button -->
+    <div 
+      class="transition-all duration-1000 delay-1000 transform"
+      [ngClass]="{
+        'translate-y-0 opacity-100': showContent,
+        'translate-y-8 opacity-0': !showContent
+      }"
+    >
+      <button
+        (click)="navigateToLogin()"
+        class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-purple-1 to-purple-5 rounded-full shadow-2xl hover:shadow-purple-0/25 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:from-purple-0 hover:to-primary"
+        [ngClass]="{
+          'animate-neon-pulse': animateButton
+        }"
+      >
+        <span class="relative z-10 flex items-center gap-3">
+          <i class="fa-solid fa-sign-in-alt"></i>
+          Sign In to Get Started
+          <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform duration-300"></i>
+        </span>
+        
+        <!-- Button Glow Effect -->
+        <div class="absolute inset-0 rounded-full bg-gradient-to-r from-purple-1 to-purple-5 blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+      </button>
+    </div>
+
+    <!-- Additional Info -->
+    <div 
+      class="mt-12 transition-all duration-1000 delay-1200 transform"
+      [ngClass]="{
+        'translate-y-0 opacity-100': showContent,
+        'translate-y-8 opacity-0': !showContent
+      }"
+    >
+      <p class="text-purple-0/80 text-sm">
+        Need help getting started? Check out our 
+        <a href="#" class="text-purple-1 hover:text-primary underline transition-colors">documentation</a> 
+        or 
+        <a href="#" class="text-purple-1 hover:text-primary underline transition-colors">contact support</a>
+      </p>
+    </div>
+  </div>
+</div>

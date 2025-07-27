@@ -10,22 +10,31 @@
     class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 w-full"
   >
     <!-- Add project for admin -->
-    <app-add-btn />
+    <app-add-btn (projectCreated)="onProjectCreated()" />
     <!-- /Add project for admin -->
 
     <!-- right section -->
-    <app-filter />
+    <app-filter 
+      (filterChange)="onFilterChange($event)"
+      (searchChange)="onSearchChange($event)"
+    />
     <!-- /right section -->
   </section>
   <!-- /filtering & search -->
 
   <!-- projects list -->
-  <app-project />
+  <app-project 
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    (paginationChange)="onPaginationChange($event)"
+  />
   <!-- /project-list -->
 
   <!-- pagination -->
-  <app-pagination />
+  <app-pagination 
+    [paginationInfo]="paginationInfo"
+    (pageChange)="onPageChange($event)"
+  />
   <!-- /pagination -->
 
-  <!--  -->
 </div>

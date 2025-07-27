@@ -1,22 +1,25 @@
-<svg
-  (click)="showConfirmPopup = true; $event.stopPropagation()"
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
-  class="lucide lucide-trash-icon lucide-trash text-error w-6 h-6 hover:text-red-600 hover:bg-hover p-1 rounded-lg cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
->
-  <path d="M3 6h18" />
-  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-</svg>
+<!-- Delete Button - Only shown if current user is manager -->
+<ng-container *ngIf="isManager">
+  <svg
+    (click)="showConfirmPopup = true; $event.stopPropagation()"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-trash-icon lucide-trash text-error w-6 h-6 hover:text-red-600 hover:bg-hover p-1 rounded-lg cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+  >
+    <path d="M3 6h18" />
+    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+  </svg>
+</ng-container>
 
-<!--  and Popup Overlay -->
+<!-- Confirmation Popup -->
 <div
   *ngIf="showConfirmPopup"
   class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center"
@@ -25,25 +28,39 @@
     <div class="flex justify-between">
       <h2 class="text-lg font-bold mb-4">Confirm Deletion</h2>
       <i
-        (click)="confirmDelete()"
+        (click)="cancelDelete()"
         class="fa-solid fa-xmark text-gray-300 hover:text-error active:scale-95 cursor-pointer"
       ></i>
     </div>
-    <p class="text-sm mb-6">Are you sure you want to delete this Member?</p>
+
+    <p class="text-sm mb-6">
+      Are you sure you want to delete
+      {{ member.firstName + " " + member.lastName || "this member" }} from the
+      project?
+    </p>
+
+    <div *ngIf="errorMessage" class="text-error text-sm mb-4">
+      {{ errorMessage }}
+    </div>
+
     <div class="flex justify-end gap-2">
       <button
         (click)="confirmDelete()"
-        class="bg-error text-white px-4 py-2 rounded hover:bg-error/80"
+        [disabled]="isDeleting"
+        class="bg-error text-white px-4 py-2 rounded hover:bg-error/80 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Delete
+        <span *ngIf="!isDeleting">Delete</span>
+        <span *ngIf="isDeleting">
+          <i class="fa-solid fa-spinner fa-spin"></i> Deleting...
+        </span>
       </button>
       <button
         (click)="cancelDelete()"
-        class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+        [disabled]="isDeleting"
+        class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 disabled:opacity-50"
       >
         Cancel
       </button>
     </div>
   </div>
 </div>
-<!-- /Popup Overlay -->

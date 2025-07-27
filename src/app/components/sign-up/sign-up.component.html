@@ -35,56 +35,181 @@
       <h2 class="text-2xl font-bold text-center text-purple-0">
         Create your account
       </h2>
+
+      <!-- Backend Error Messages -->
+      <div 
+        *ngIf="backendErrors.length > 0"
+        class="bg-gradient-to-r from-error/10 to-error/5 border border-error/30 rounded-lg p-4 space-y-2 animate-shake"
+      >
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-triangle-exclamation text-error text-lg"></i>
+          <span class="font-semibold text-error">Registration Failed</span>
+        </div>
+        <div class="space-y-1">
+          <div 
+            *ngFor="let error of backendErrors; trackBy: trackByIndex"
+            class="flex items-start gap-2 text-sm text-error/90"
+          >
+            <i class="fa-solid fa-circle-xmark text-error/70 mt-0.5"></i>
+            <span>{{ error }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Validation Summary (for overall form state) -->
+      <div 
+        *ngIf="shouldShowSuccessIndicators && formValidationState === 'valid' && !signupForm.pristine"
+        class="bg-gradient-to-r from-completed/10 to-completed/5 border border-completed/30 rounded-lg p-3 animate-fade-in-scale"
+      >
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-circle-check text-completed"></i>
+          <span class="text-completed font-medium text-sm">All fields look good!</span>
+        </div>
+      </div>
+
       <form
         [formGroup]="signupForm"
-        (ngSubmit)="leaveAndNavigate('/login')"
-        class="flex flex-col gap-2"
+        (ngSubmit)="onSubmit()"
+        class="flex flex-col gap-2 signup-form"
       >
-        <ng-container *ngFor="let ctrl of controls">
+        <ng-container *ngFor="let ctrl of controls; trackBy: trackByControlName">
           <div class="relative">
-            <div class="mt-1 rounded-md overflow-hidden">
+            <div class="mt-1 rounded-md overflow-hidden relative">
               <input
                 [type]="ctrl.type"
                 [formControlName]="ctrl.name"
-                class="peer w-full pl-1 py-2 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative"
+                class="peer w-full pl-1 py-2 rounded-md border-2 transition-all duration-300 relative focus:outline-none"
+                [ngClass]="{
+                  'border-transparent focus:animate-neon-pulse': getFieldState(ctrl.name) === 'neutral',
+                  'border-completed/50 focus:border-completed bg-completed/5': getFieldState(ctrl.name) === 'valid',
+                  'border-error/50 focus:border-error bg-error/5 animate-shake': getFieldState(ctrl.name) === 'invalid'
+                }"
                 placeholder=" "
               />
 
               <!-- Floating Icon + Label -->
               <label
-                class="absolute px-1 -top-1 bg-white z-50 left-3 text-sm flex items-center gap-1 transition-all duration-300 pointer-events-none peer-focus:-top-1 text-purple-0 peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm"
+                class="absolute px-1 -top-1 bg-white z-50 left-3 text-sm flex items-center gap-1 transition-all duration-300 pointer-events-none peer-focus:-top-1 peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm"
+                [ngClass]="{
+                  'text-purple-0': getFieldState(ctrl.name) === 'neutral',
+                  'text-completed': getFieldState(ctrl.name) === 'valid',
+                  'text-error': getFieldState(ctrl.name) === 'invalid'
+                }"
               >
                 <i [class]="ctrl.icon"></i> {{ ctrl.placeholder }}
+                <!-- Validation status icon -->
+                <i 
+                  *ngIf="shouldShowSuccessIndicators && getFieldState(ctrl.name) === 'valid'" 
+                  class="fa-solid fa-circle-check text-completed ml-1 animate-pulse-dot"
+                ></i>
+                <i 
+                  *ngIf="getFieldState(ctrl.name) === 'invalid'" 
+                  class="fa-solid fa-circle-exclamation text-error ml-1 animate-pulse"
+                ></i>
               </label>
+
+              <!-- Real-time validation indicator -->
+              <div 
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 transition-all duration-300"
+                *ngIf="signupForm.get(ctrl.name)?.touched || signupForm.get(ctrl.name)?.dirty || (signupForm.get(ctrl.name)?.value && signupForm.get(ctrl.name)?.value.length > 0)"
+              >
+                <i 
+                  *ngIf="shouldShowSuccessIndicators && getFieldState(ctrl.name) === 'valid'" 
+                  class="fa-solid fa-check text-completed animate-fade-in-scale"
+                ></i>
+                <i 
+                  *ngIf="getFieldState(ctrl.name) === 'invalid'" 
+                  class="fa-solid fa-times text-error animate-shake"
+                ></i>
+              </div>
             </div>
 
             <!-- Error messages -->
             <div
-              class="min-h-[20px] mt-1 space-y-1 text-sm text-error transition-opacity duration-300"
-              [class.invisible]="
-                !(
-                  signupForm.get(ctrl.name)?.touched &&
-                  signupForm.get(ctrl.name)?.invalid
-                )
-              "
+              class="min-h-[20px] mt-1 space-y-1 text-sm transition-all duration-300"
+              [class.invisible]="getErrors(ctrl.name).length === 0"
             >
               <div
-                *ngFor="let err of getErrors(ctrl.name)"
-                class="flex items-center gap-1"
+                *ngFor="let err of getErrors(ctrl.name); trackBy: trackByIndex"
+                class="flex items-start gap-1 text-error animate-fade-in-scale"
               >
-                <i class="fa-solid fa-circle-exclamation text-error"></i>
-                <span>{{ err }}</span>
+                <i class="fa-solid fa-circle-exclamation text-error mt-0.5 text-xs"></i>
+                <span class="leading-tight">{{ err }}</span>
               </div>
+            </div>
+
+            <!-- Success message for valid fields -->
+            <div
+              *ngIf="shouldShowSuccessIndicators && getFieldState(ctrl.name) === 'valid' && (signupForm.get(ctrl.name)?.touched || signupForm.get(ctrl.name)?.dirty || (signupForm.get(ctrl.name)?.value && signupForm.get(ctrl.name)?.value.length > 0))"
+              class="mt-1 text-sm text-completed flex items-center gap-1 animate-fade-in-scale"
+            >
+              <i class="fa-solid fa-circle-check text-xs"></i>
+              <span>Looks good!</span>
             </div>
           </div>
         </ng-container>
 
+        <!-- Password Strength Indicator -->
+        <div 
+          *ngIf="shouldShowSuccessIndicators && signupForm.get('password')?.touched && signupForm.get('password')?.value"
+          class="mt-2 mb-4"
+        >
+          <div class="text-xs text-gray-600 mb-1">Password Strength:</div>
+          <div class="flex gap-1 mb-2">
+            <div 
+              class="h-1 flex-1 rounded transition-all duration-300"
+              [ngClass]="{
+                'bg-error': getPasswordStrength() === 'weak',
+                'bg-planning': getPasswordStrength() === 'medium',
+                'bg-completed': getPasswordStrength() === 'strong'
+              }"
+            ></div>
+            <div 
+              class="h-1 flex-1 rounded transition-all duration-300"
+              [ngClass]="{
+                'bg-gray-200': getPasswordStrength() === 'weak',
+                'bg-planning': getPasswordStrength() === 'medium',
+                'bg-completed': getPasswordStrength() === 'strong'
+              }"
+            ></div>
+            <div 
+              class="h-1 flex-1 rounded transition-all duration-300"
+              [ngClass]="{
+                'bg-gray-200': getPasswordStrength() === 'weak' || getPasswordStrength() === 'medium',
+                'bg-completed': getPasswordStrength() === 'strong'
+              }"
+            ></div>
+          </div>
+          <div 
+            class="text-xs transition-colors duration-300"
+            [ngClass]="{
+              'text-error': getPasswordStrength() === 'weak',
+              'text-planning': getPasswordStrength() === 'medium',
+              'text-completed': getPasswordStrength() === 'strong'
+            }"
+          >
+            {{ getPasswordStrengthText() }}
+          </div>
+        </div>
+
+        <!-- Fixed: Changed from leaveAndNavigate() to onSubmit() to prevent double submission -->
         <button
           type="submit"
-          [disabled]="signupForm.invalid"
-          class="w-full pl-1 py-2 px-4 bg-gradient-to-b from-purple-4 to-purple-5 text-white font-semibold rounded-lg shadow-md disabled:opacity-50 transition"
+          [disabled]="isSubmitting"
+          class="w-full pl-1 py-2 px-4 font-semibold rounded-lg shadow-md transition-all duration-300 flex items-center justify-center transform hover:scale-[1.02] active:scale-[0.98]"
+          [ngClass]="{
+            'bg-gradient-to-b from-purple-4 to-purple-5 text-white hover:from-purple-0 hover:to-purple-1 disabled:opacity-50 disabled:cursor-not-allowed': !hasAnyErrors,
+            'bg-gradient-to-b from-purple-4 to-purple-5 text-white opacity-50 cursor-not-allowed': hasAnyErrors || isSubmitting
+          }"
         >
-          Sign Up
+          <span *ngIf="!isSubmitting">
+            <i class="fa-solid fa-user-plus mr-2"></i>
+            Create Account
+          </span>
+          <div *ngIf="isSubmitting" class="flex items-center gap-2">
+            <i class="fa-solid fa-spinner animate-spin"></i>
+            <span>Creating Account...</span>
+          </div>
         </button>
       </form>
 
@@ -92,7 +217,7 @@
         Already have an account?
         <a
           (click)="leaveAndNavigate('/login')"
-          class="text-purple-1 cursor-pointer hover:underline"
+          class="text-purple-1 cursor-pointer hover:text-primary hover:underline transition-colors duration-200"
           >Log in</a
         >
       </p>

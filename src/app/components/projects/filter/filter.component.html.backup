@@ -1,0 +1,99 @@
+<div class="flex gap-2 flex-col md:flex-row text-white">
+  <!-- search -->
+  <div class="relative bg-black/30 w-full md:w-64 h-10">
+    <input
+      type="text"
+      placeholder="Search projects..."
+      [(ngModel)]="searchTerm"
+      (input)="onSearchChange($event)"
+      class="w-full h-full pl-10 pr-4 py-2 text-sm font-medium text-white bg-transparent border border-action rounded-lg outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+    />
+    <i
+      class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+    ></i>
+    <!-- Clear search button -->
+    <button
+      *ngIf="searchTerm"
+      (click)="searchTerm = ''; emitFilterChange()"
+      class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+    >
+      <i class="fa-solid fa-times text-sm"></i>
+    </button>
+  </div>
+  <!-- /search -->
+
+  <!-- status dropdown-->
+  <div
+    #dropdownWrapper
+    class="relative inline-block bg-black/30 text-white text-left"
+  >
+    <button
+      (click)="toggleDropdown()"
+      type="button"
+      class="flex justify-between items-center w-full md:w-40 h-10 px-2 text-sm font-medium text-white bg-transparent border border-action rounded-lg hover:border-primary transition-colors"
+      [class.border-primary]="selectedStatus !== 'All status'"
+    >
+      <span>{{ selectedStatus }}</span>
+      <i
+        class="fa-solid ml-2"
+        [ngClass]="{
+          'fa-chevron-up': isOpen,
+          'fa-chevron-down': !isOpen
+        }"
+      ></i>
+    </button>
+
+    <ul
+      *ngIf="isOpen"
+      class="absolute z-10 mt-2 w-full md:w-40 bg-screen border border-action rounded-lg shadow-lg max-h-48 overflow-y-auto"
+    >
+      <li
+        *ngFor="let option of statusOptions"
+        (click)="selectStatus(option)"
+        class="w-full px-4 py-2 text-white hover:bg-hover rounded-lg cursor-pointer flex justify-between items-center"
+        [class.bg-primary/20]="option === selectedStatus"
+      >
+        <span>{{ option }}</span>
+        <i
+          *ngIf="option === selectedStatus"
+          class="fa-solid fa-check text-primary ml-2"
+        ></i>
+      </li>
+    </ul>
+  </div>
+  <!-- /status dropdown-->
+
+  <!-- Active projects toggle -->
+  <button
+    (click)="onActiveToggle()"
+    class="h-10 px-3 flex items-center justify-center gap-2 rounded-lg border bg-black/30 text-white cursor-pointer hover:bg-hover transition-all duration-200 ease-in-out active:scale-95 whitespace-nowrap"
+    [class.border-primary]="showActiveOnly"
+    [class.bg-primary/20]="showActiveOnly"
+    [class.border-action]="!showActiveOnly"
+    title="Show only active projects"
+  >
+    <i class="fa-solid fa-toggle-on" *ngIf="showActiveOnly"></i>
+    <i class="fa-solid fa-toggle-off" *ngIf="!showActiveOnly"></i>
+    <span class="text-sm">Active</span>
+  </button>
+
+  <!-- Clear filters button -->
+  <button
+    *ngIf="hasActiveFilters()"
+    (click)="clearFilters()"
+    class="h-10 px-3 flex items-center justify-center gap-2 rounded-lg border border-error bg-error/20 text-error cursor-pointer hover:bg-error/30 transition-all duration-200 ease-in-out active:scale-95 whitespace-nowrap"
+    title="Clear all filters"
+  >
+    <i class="fa-solid fa-times"></i>
+    <span class="text-sm">Clear</span>
+  </button>
+
+  <!-- Filter indicator -->
+  <div
+    *ngIf="hasActiveFilters()"
+    class="h-10 px-3 flex items-center justify-center rounded-lg border border-primary bg-primary/20 text-primary whitespace-nowrap"
+  >
+    <i class="fa-solid fa-filter mr-2"></i>
+    <span class="text-sm">Filtered</span>
+  </div>
+</div>

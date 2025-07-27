@@ -1,27 +1,66 @@
-<div class="flex items-center justify-center gap-1">
+<div class="flex items-center justify-center gap-1" *ngIf="paginationInfo && totalPages > 1">
+  <!-- First page button -->
   <button
-    class="flex items-center justify-center w-10 h-10 rounded-lg text-primary hover:text-primary/80 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
+    *ngIf="currentPage > 2"
+    (click)="goToFirstPage()"
+    class="flex items-center justify-center w-10 h-10 rounded-lg text-primary hover:text-primary/80 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    title="First page"
+  >
+    <i class="fa-solid fa-angles-left"></i>
+  </button>
+
+  <!-- Previous page button -->
+  <button
+    (click)="goToPreviousPage()"
+    [disabled]="!hasPreviousPage"
+    class="flex items-center justify-center w-10 h-10 rounded-lg text-primary hover:text-primary/80 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    title="Previous page"
   >
     <i class="fa-solid fa-chevron-left"></i>
   </button>
+
+  <!-- Page numbers -->
   <div class="flex items-center justify-center gap-2">
     <span
-      class="bg-black/30 border border-primary px-3 py-3 text-white rounded-sm cursor-pointer scale-90"
-      >1</span
+      *ngFor="let page of visiblePages"
+      (click)="goToPage(page)"
+      class="px-3 py-3 text-white rounded-sm cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+      [ngClass]="{
+        'bg-black/30 border border-primary scale-90': page === currentPage,
+        'bg-black/30 hover:bg-black/50': page !== currentPage
+      }"
+      [title]="'Go to page ' + page"
     >
-    <span
-      class="bg-black/30 px-3 py-3 text-white rounded-sm cursor-pointer active:scale-95"
-      >2</span
-    >
-    <span
-      class="bg-black/30 px-3 py-3 text-white rounded-sm cursor-pointer active:scale-95"
-      >3</span
-    >
+      {{ page }}
+    </span>
   </div>
 
+  <!-- Next page button -->
   <button
-    class="flex items-center justify-center w-10 h-10 rounded-lg text-primary hover:text-primary/80 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer"
+    (click)="goToNextPage()"
+    [disabled]="!hasNextPage"
+    class="flex items-center justify-center w-10 h-10 rounded-lg text-primary hover:text-primary/80 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    title="Next page"
   >
     <i class="fa-solid fa-chevron-right"></i>
   </button>
+
+  <!-- Last page button -->
+  <button
+    *ngIf="currentPage < totalPages - 1"
+    (click)="goToLastPage()"
+    class="flex items-center justify-center w-10 h-10 rounded-lg text-primary hover:text-primary/80 transition-all duration-200 ease-in-out active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    title="Last page"
+  >
+    <i class="fa-solid fa-angles-right"></i>
+  </button>
+</div>
+
+<!-- Pagination info -->
+<div class="flex items-center justify-center mt-4 text-sm text-gray-400" *ngIf="paginationInfo && paginationInfo.totalRecords > 0">
+  <span>
+    Showing {{ (currentPage - 1) * paginationInfo.pageSize + 1 }} to 
+    {{ Math.min(currentPage * paginationInfo.pageSize, paginationInfo.totalRecords) }} of 
+    {{ paginationInfo.totalRecords }} projects
+  </span>
 </div>

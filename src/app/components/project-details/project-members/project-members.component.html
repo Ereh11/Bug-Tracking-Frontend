@@ -4,25 +4,26 @@
       <i class="fa-solid fa-users"></i>
       <h1 class="text-xl font-bold">Project Members</h1>
     </div>
-    <app-add-member />
+    <app-add-member (memberAdded)="addMemberToProject($event)" />
   </div>
-  <span class="text-gray-400 text-sm"
-    >Team members assigned to this project</span
-  >
-  <!-- member -->
-  <div class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
-    <div class="flex gap-2 items-center justify-between">
-      <!-- Member avatar -->
-      <div
-        class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg"
-      >
-        {{ managerName.charAt(0) }}
+  <span class="text-gray-400 text-sm">
+    Team members assigned to this project
+  </span>
+  
+  <!-- Manager Card -->
+  <div *ngIf="manager" class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
+    <div class="flex gap-2 items-center">
+      <!-- Fixed avatar interpolation -->
+      <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
+        {{ manager.firstName.charAt(0) || '' }}{{ manager.lastName.charAt(0) || '' }}
       </div>
 
       <!-- Member details -->
       <div class="flex flex-col">
-        <h1 class="font-bold text-white">{{ managerName }}</h1>
-        <p class="text-gray-500 text-sm">{{ managerEmail }}</p>
+        <h1 class="font-bold text-white">
+          {{ manager.firstName }} {{ manager.lastName }}
+        </h1>
+        <p class="text-gray-500 text-sm">{{ manager.email }}</p>
       </div>
     </div>
     <!-- Role badge -->
@@ -31,41 +32,33 @@
     </span>
   </div>
 
-  <!-- member -->
-  <div class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
-    <div class="flex gap-2 items-center justify-between">
-      <!-- Member avatar -->
-      <div
-        class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg"
-      >
-        {{ managerName.charAt(0) }}
+  <!-- Regular Members -->
+  <div *ngFor="let member of regularMembers" class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
+    <div class="flex gap-2 items-center">
+      <!-- Fixed avatar interpolation -->
+      <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
+        {{ member.firstName.charAt(0) || '' }}{{ member.lastName.charAt(0) || '' }}
       </div>
 
       <!-- Member details -->
       <div class="flex flex-col">
-        <h1 class="font-bold text-white">{{ managerName }}</h1>
-        <p class="text-gray-500 text-sm">{{ managerEmail }}</p>
+        <h1 class="font-bold text-white">
+          {{ member.firstName }} {{ member.lastName }}
+        </h1>
+        <p class="text-gray-500 text-sm">{{ member.email }}</p>
+        <span class="text-xs bg-gray-700 px-2 py-1 rounded mt-1 w-fit">
+          {{ member.role }}
+        </span>
       </div>
     </div>
-    <app-delete-member />
+    
+    <!-- Delete button -->
+    <app-delete-member [member]="member" />
   </div>
 
-  <!-- member -->
-  <div class="rounded-lg p-2 bg-member flex gap-2 justify-between items-center">
-    <div class="flex gap-2 items-center justify-between">
-      <!-- Member avatar -->
-      <div
-        class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg"
-      >
-        {{ managerName.charAt(0) }}
-      </div>
-
-      <!-- Member details -->
-      <div class="flex flex-col">
-        <h1 class="font-bold text-white">{{ managerName }}</h1>
-        <p class="text-gray-500 text-sm">{{ managerEmail }}</p>
-      </div>
-    </div>
-    <app-delete-member />
+  <!-- Empty state -->
+  <div *ngIf="regularMembers.length === 0" class="text-center py-6 text-gray-500">
+    <i class="fa-solid fa-users-slash text-3xl mb-2"></i>
+    <p>No team members added yet</p>
   </div>
 </div>
