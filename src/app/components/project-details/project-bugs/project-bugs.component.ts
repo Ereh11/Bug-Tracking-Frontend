@@ -23,6 +23,7 @@ import { Subscription } from 'rxjs';
 })
 export class ProjectBugsComponent implements OnInit, OnDestroy {
   bugs: Bug[] = [];
+  projectId: string = '';
   private subscriptions: Subscription[] = [];
 
   constructor(private projectDetailsService: ProjectDetailsService) {}
@@ -32,6 +33,7 @@ export class ProjectBugsComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.projectDetailsService.projectData$.subscribe(projectData => {
         this.bugs = projectData?.bugs || [];
+        this.projectId = projectData?.info?.id || '';
       })
     );
   }

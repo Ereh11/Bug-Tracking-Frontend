@@ -1,5 +1,5 @@
 <button
-  (click)="showAddBugPopup = true"
+  (click)="openAddBugPopup()"
   class="flex items-center justify-center md:justify-normal gap-1 text-white px-6 py-2 rounded-md bg-primary hover:bg-primary/80 transition-all duration-200 ease-in-out active:scale-95"
 >
   <svg
@@ -42,44 +42,79 @@
         Create a new bug or issue for this project.
       </p>
 
+      <!-- Bug Title Field -->
       <div>
-        <label class="block text-sm font-medium mb-1">Bug Name</label>
-        <input
-          type="text"
-          [(ngModel)]="newBug.name"
-          (input)="showNameError = false"
-          placeholder="Enter Bug name"
-          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
-        />
-        <p
-          class="text-sm font-semibold text-error mt-1"
-          [class.invisible]="!showNameError"
-        >
-          Bug name is required.
-        </p>
+        <label class="block text-sm font-medium mb-2 text-gray-200">
+          Bug Title <span class="text-red-400">*</span>
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="newBug.title"
+            (input)="onTitleInput()"
+            (blur)="validateTitle()"
+            placeholder="Enter bug title"
+            [class]="'w-full p-3 rounded-lg bg-white/10 text-white border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 ' + 
+                     (titleErrors.length > 0 ? 'border-red-400 focus:border-red-400' : 'border-gray-500 focus:border-primary')"
+            [disabled]="isSubmitting"
+          />
+          <div *ngIf="titleErrors.length > 0" class="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <i class="fa-solid fa-exclamation-circle text-red-400"></i>
+          </div>
+        </div>
+        
+        <!-- Title Error Messages -->
+        <div *ngIf="titleErrors.length > 0" class="mt-2 space-y-1">
+          <div *ngFor="let error of titleErrors" class="flex items-center gap-2 text-red-400 text-sm animate-fade-in">
+            <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+            {{ error }}
+          </div>
+        </div>
       </div>
 
+      <!-- Description Field -->
       <div>
-        <label class="block text-sm font-medium mb-1">Description</label>
-        <textarea
-          [(ngModel)]="newBug.description"
-          placeholder="Enter Bug description"
-          rows="4"
-          class="w-full p-2 rounded bg-white/10 text-white border border-gray-500 focus:outline-none focus:border-primary"
-        ></textarea>
+        <label class="block text-sm font-medium mb-2 text-gray-200">
+          Description <span class="text-red-400">*</span>
+        </label>
+        <div class="relative">
+          <textarea
+            [(ngModel)]="newBug.description"
+            (input)="onDescriptionInput()"
+            (blur)="validateDescription()"
+            placeholder="Enter detailed bug description"
+            rows="4"
+            [class]="'w-full p-3 rounded-lg bg-white/10 text-white border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none ' + 
+                     (descriptionErrors.length > 0 ? 'border-red-400 focus:border-red-400' : 'border-gray-500 focus:border-primary')"
+            [disabled]="isSubmitting"
+          ></textarea>
+          <div *ngIf="descriptionErrors.length > 0" class="absolute right-3 top-3">
+            <i class="fa-solid fa-exclamation-circle text-red-400"></i>
+          </div>
+        </div>
+        
+        <!-- Description Error Messages -->
+        <div *ngIf="descriptionErrors.length > 0" class="mt-2 space-y-1">
+          <div *ngFor="let error of descriptionErrors" class="flex items-center gap-2 text-red-400 text-sm animate-fade-in">
+            <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+            {{ error }}
+          </div>
+        </div>
       </div>
 
       <!-- Priority Dropdown -->
       <div>
-        <label class="block text-sm font-medium mb-1">Priority</label>
+        <label class="block text-sm font-medium mb-2 text-gray-200">Priority</label>
         <div class="relative">
           <button
+            type="button"
             (click)="togglePriority()"
-            class="w-full p-2 rounded-lg bg-white/10 text-white border border-gray-500 flex justify-between items-center"
+            [disabled]="isSubmitting"
+            class="w-full p-3 rounded-lg bg-white/10 text-white border-2 border-gray-500 flex justify-between items-center focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>{{ selectedPriority }}</span>
+            <span>{{ getPriorityLabel(selectedPriority) }}</span>
             <i
-              class="fa-solid"
+              class="fa-solid transition-transform duration-200"
               [ngClass]="{
                 'fa-chevron-up': isPriorityOpen,
                 'fa-chevron-down': !isPriorityOpen
@@ -87,18 +122,21 @@
             ></i>
           </button>
           <ul
-            *ngIf="isPriorityOpen"
-            class="absolute bottom-full z-10 mt-2 w-full bg-screen border border-action rounded-lg shadow-lg"
+            *ngIf="isPriorityOpen && !isSubmitting"
+            class="absolute bottom-full z-20 mb-1 w-full bg-screen border-2 border-primary rounded-lg shadow-lg max-h-40 overflow-y-auto"
           >
             <li
               *ngFor="let option of priorityOptions"
-              (click)="selectPriority(option)"
-              class="px-4 py-2 hover:bg-hover rounded-lg cursor-pointer flex justify-between"
+              (click)="selectPriority(option.value)"
+              [ngClass]="{
+                'px-4 py-3 hover:bg-hover cursor-pointer flex justify-between items-center transition-colors duration-150': true,
+                'bg-primary bg-opacity-20': option.value === selectedPriority
+              }"
             >
-              <span>{{ option }}</span>
+              <span>{{ option.label }}</span>
               <i
-                *ngIf="option === selectedPriority"
-                class="fa-solid fa-check ml-2"
+                *ngIf="option.value === selectedPriority"
+                class="fa-solid fa-check text-primary"
               ></i>
             </li>
           </ul>
@@ -107,15 +145,17 @@
 
       <!-- Status Dropdown -->
       <div>
-        <label class="block text-sm font-medium mb-1">Status</label>
+        <label class="block text-sm font-medium mb-2 text-gray-200">Status</label>
         <div class="relative">
           <button
+            type="button"
             (click)="toggleStatus()"
-            class="w-full p-2 rounded-lg bg-white/10 text-white border border-gray-500 flex justify-between items-center"
+            [disabled]="isSubmitting"
+            class="w-full p-3 rounded-lg bg-white/10 text-white border-2 border-gray-500 flex justify-between items-center focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span>{{ selectedStatus }}</span>
+            <span>{{ getStatusLabel(selectedStatus) }}</span>
             <i
-              class="fa-solid"
+              class="fa-solid transition-transform duration-200"
               [ngClass]="{
                 'fa-chevron-up': isStatusOpen,
                 'fa-chevron-down': !isStatusOpen
@@ -123,73 +163,57 @@
             ></i>
           </button>
           <ul
-            *ngIf="isStatusOpen"
-            class="absolute bottom-full z-10 mt-2 w-full bg-screen border border-action rounded-lg shadow-lg"
+            *ngIf="isStatusOpen && !isSubmitting"
+            class="absolute bottom-full z-20 mb-1 w-full bg-screen border-2 border-primary rounded-lg shadow-lg max-h-40 overflow-y-auto"
           >
             <li
               *ngFor="let option of statusOptions"
-              (click)="selectStatus(option)"
-              class="px-4 py-2 hover:bg-hover rounded-lg cursor-pointer flex justify-between"
-            >
-              <span>{{ option }}</span>
-              <i
-                *ngIf="option === selectedStatus"
-                class="fa-solid fa-check ml-2"
-              ></i>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Assign To Dropdown -->
-      <div>
-        <label class="block text-sm font-medium mb-1"
-          >Assign To (Optional)</label
-        >
-        <div class="relative">
-          <button
-            (click)="toggleAssignee()"
-            class="w-full p-2 rounded-lg bg-white/10 text-white border border-gray-500 flex justify-between items-center"
-          >
-            <span>{{ selectedAssignee }}</span>
-            <i
-              class="fa-solid"
+              (click)="selectStatus(option.value)"
               [ngClass]="{
-                'fa-chevron-up': isAssigneeOpen,
-                'fa-chevron-down': !isAssigneeOpen
+                'px-4 py-3 hover:bg-hover cursor-pointer flex justify-between items-center transition-colors duration-150': true,
+                'bg-primary bg-opacity-20': option.value === selectedStatus
               }"
-            ></i>
-          </button>
-          <ul
-            *ngIf="isAssigneeOpen"
-            class="absolute bottom-full z-10 mt-2 w-full bg-screen border border-action rounded-lg shadow-lg"
-          >
-            <li
-              *ngFor="let member of teamMembers"
-              (click)="selectAssignee(member)"
-              class="px-4 py-2 hover:bg-hover rounded-lg cursor-pointer flex justify-between"
             >
-              <span>{{ member }}</span>
+              <span>{{ option.label }}</span>
               <i
-                *ngIf="member === selectedAssignee"
-                class="fa-solid fa-check ml-2"
+                *ngIf="option.value === selectedStatus"
+                class="fa-solid fa-check text-primary"
               ></i>
             </li>
           </ul>
         </div>
       </div>
-    </div>
 
-    <div class="flex justify-end gap-2 mt-6">
+      <!-- Submit Error Message -->
+      <div *ngIf="submitError" class="bg-red-900/30 border border-red-400 rounded-lg p-3 animate-fade-in">
+        <div class="flex items-center gap-2 text-red-400 text-sm">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          {{ submitError }}
+        </div>
+      </div>
+    </div>    <div class="flex justify-end gap-3 mt-6">
       <button
         (click)="createBug()"
-        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+        [disabled]="hasValidationErrors || isSubmitting"
+        [class]="'px-6 py-2.5 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 ' + 
+                 (hasValidationErrors || isSubmitting 
+                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+                   : 'bg-primary text-white hover:bg-primary/80 active:scale-95 cursor-pointer')"
       >
-        Create Bug
+        <span *ngIf="isSubmitting" class="flex items-center gap-2">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          Creating...
+        </span>
+        <span *ngIf="!isSubmitting">Create Bug</span>
       </button>
+      
       <button
         (click)="cancelAddBug()"
-        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95"
+        [disabled]="isSubmitting"
+        [class]="'px-6 py-2.5 rounded-lg font-medium border-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400/50 ' + 
+                 (isSubmitting 
+                   ? 'text-gray-500 border-gray-600 cursor-not-allowed' 
+                   : 'text-white border-gray-400 hover:bg-gray-600/20 active:scale-95 cursor-pointer')"
       >
         Cancel
       </button>

@@ -120,11 +120,11 @@ export class ProjectDetailsService {
   // Status mappings
   private readonly statusMap: { [key: number]: Bug['status'] } = {
     1: 'New',
-    2: 'In Progress', 
-    3: 'Resolved',
-    4: 'Closed',
-    5: 'Reopened',
-    6: 'Assigned'
+    2: 'Assigned',
+    3: 'In Progress', 
+    4: 'Resolved',
+    5: 'Closed',
+    6: 'Reopened'
   };
 
   private readonly priorityMap: { [key: number]: Bug['priority'] } = {
@@ -136,11 +136,11 @@ export class ProjectDetailsService {
 
   private readonly reverseStatusMap: { [key in Bug['status']]: number } = {
     'New': 1,
-    'In Progress': 2,
-    'Resolved': 3,
-    'Closed': 4,
-    'Reopened': 5,
-    'Assigned': 6
+    'Assigned': 2,
+    'In Progress': 3,
+    'Resolved': 4,
+    'Closed': 5,
+    'Reopened': 6
   };
 
   private readonly reversePriorityMap: { [key in Bug['priority']]: number } = {
@@ -414,6 +414,33 @@ export class ProjectDetailsService {
         }),
         catchError(error => {
           this.errorSubject.next(error.message || 'Failed to add bug');
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // New method for the specific API endpoint you provided
+  createBug(projectId: string, title: string, description: string, status: number, priority: number): Observable<any> {
+    const bugData = {
+      title: title,
+      description: description,
+      projectId: projectId,
+      status: status,
+      priority: priority
+    };
+
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('POST', '/bugs', bugData)
+      .pipe(
+        switchMap(response => {
+          if (!response.success) {
+            throw new Error(response.message || 'Failed to create bug');
+          }
+          
+          // Since backend returns success message only, reload project data
+          return this.loadProject(projectId);
+        }),
+        catchError(error => {
+          this.errorSubject.next(error.message || 'Failed to create bug');
           return throwError(() => error);
         })
       );

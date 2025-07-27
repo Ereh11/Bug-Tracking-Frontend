@@ -1,0 +1,112 @@
+/* Fade-in animation for error messages */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom focus states for better accessibility */
+input:focus,
+textarea:focus,
+button:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Error state focus */
+input.border-red-400:focus,
+textarea.border-red-400:focus {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.1);
+}
+
+/* Loading button spinner animation */
+.fa-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled state styling */
+button:disabled {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Enhanced hover states */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Dropdown animations */
+ul {
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Priority and status specific styling */
+.priority-critical {
+  color: #ef4444;
+}
+
+.priority-high {
+  color: #f97316;
+}
+
+.priority-medium {
+  color: #eab308;
+}
+
+.priority-low {
+  color: #22c55e;
+}
+
+/* Status styling */
+.status-new {
+  color: #06b6d4;
+}
+
+.status-assigned {
+  color: #8b5cf6;
+}
+
+.status-in-progress {
+  color: #f59e0b;
+}
+
+.status-resolved {
+  color: #10b981;
+}
+
+.status-closed {
+  color: #6b7280;
+}
+
+.status-reopened {
+  color: #ef4444;
+}
