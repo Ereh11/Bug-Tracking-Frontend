@@ -23,6 +23,11 @@
     <div class="space-y-4">
       <p class="mb-4 text-sm text-gray-300">Upload an Attachment to the Bug</p>
 
+      <!-- Error Message -->
+      <div *ngIf="uploadError" class="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+        <p class="text-red-400 text-sm">{{ uploadError }}</p>
+      </div>
+
       <!-- File Input -->
       <label class="block">
         <span class="text-sm">File Name</span>
@@ -42,11 +47,15 @@
         <input
           id="file-input"
           type="file"
-          (change)="onFileSelected($event)"
-          accept="image/*,.pdf"
+          (change)="onFileSelected($event); resetFileInput($event)"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
           class="hidden"
         />
       </label>
+
+      <p class="text-xs text-gray-400">
+        Allowed: Images, PDF, Word, Excel, Text files (Max 5MB)
+      </p>
 
       <!-- Preview Section -->
       <div *ngIf="previewUrl" class="mt-4 text-center">
@@ -80,54 +89,96 @@
       <!-- Add Button -->
       <button
         (click)="addAttachment()"
-        [disabled]="!selectedFile"
+        [disabled]="!selectedFile || isUploading"
         class="w-full bg-primary hover:bg-primary/80 py-2 rounded text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ease-in-out active:scale-95"
       >
-        Add Attachment
+        <span *ngIf="!isUploading">Add Attachment</span>
+        <span *ngIf="isUploading" class="flex items-center justify-center gap-2">
+          <i class="fa-solid fa-spinner animate-spin"></i>
+          Uploading...
+        </span>
       </button>
 
       <!-- Uploaded Files List -->
-      <div
-        *ngFor="let attach of attachments; let i = index"
-        class="bg-screen p-3 mt-2 rounded-lg flex justify-between items-center"
-      >
-        <div class="flex items-center space-x-3">
-          <img
-            *ngIf="attach.file.type.startsWith('image')"
-            [src]="attach.preview"
-            class="w-10 h-10 rounded"
-          />
-          <div class="text-sm">
-            <p class="font-medium">{{ attach.name }}</p>
-            <p class="text-gray-400 text-xs">
-              {{ attach.file.size / 1000 | number : "1.0-2" }} KB
-            </p>
+      <div class="mt-4">
+        <h3 class="text-sm font-semibold mb-3 text-gray-300">Bug Attachments</h3>
+        
+        <!-- Loading State -->
+        <div *ngIf="isLoadingAttachments" class="text-center py-4">
+          <i class="fa-solid fa-spinner animate-spin text-gray-400"></i>
+          <p class="text-sm text-gray-400 mt-2">Loading attachments...</p>
+        </div>
+
+        <!-- Existing Attachments from Backend -->
+        <div *ngFor="let attachment of existingAttachments" 
+             class="bg-screen p-3 mb-2 rounded-lg flex justify-between items-center">
+          <div class="flex items-center space-x-3">
+            <i [class]="'fa-solid ' + getFileIcon(attachment.fileName) + ' text-blue-400 text-lg'"></i>
+            <div class="text-sm">
+              <p class="font-medium">{{ attachment.fileName }}</p>
+              <p class="text-gray-400 text-xs">{{ formatDate(attachment.createdDate) }}</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+              (click)="viewExistingFile(attachment)"
+              class="text-sm text-primary hover:text-primary/80 active:scale-95"
+              title="View file"
+            >
+              <i class="fa-regular fa-eye"></i>
+            </button>
           </div>
         </div>
-        <div class="flex items-center space-x-2">
-          <button
-            (click)="viewFile(attach.preview)"
-            class="text-sm text-primary active:scale-95"
-          >
-            <i class="fa-regular fa-eye"></i>
-          </button>
-          <svg
-            (click)="removeAttachment(i)"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-trash-icon lucide-trash text-error w-6 h-6 hover:text-red-600 hover:bg-hover p-1 rounded-lg cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
-          >
-            <path d="M3 6h18" />
-            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-          </svg>
+
+        <!-- Newly Uploaded Files (Session Only) -->
+        <div *ngFor="let attach of newAttachments; let i = index"
+             class="bg-green-500/10 border border-green-500/20 p-3 mb-2 rounded-lg flex justify-between items-center">
+          <div class="flex items-center space-x-3">
+            <img
+              *ngIf="attach.file.type.startsWith('image')"
+              [src]="attach.preview"
+              class="w-10 h-10 rounded"
+            />
+            <i *ngIf="!attach.file.type.startsWith('image')" 
+               [class]="'fa-solid ' + getFileIcon(attach.name) + ' text-green-400 text-lg'"></i>
+            <div class="text-sm">
+              <p class="font-medium text-green-300">{{ attach.name }} <span class="text-xs">(New)</span></p>
+              <p class="text-gray-400 text-xs">
+                {{ formatFileSize(attach.file.size) }} KB
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+              (click)="viewFile(attach.preview)"
+              class="text-sm text-primary active:scale-95"
+            >
+              <i class="fa-regular fa-eye"></i>
+            </button>
+            <svg
+              (click)="removeAttachment(i)"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="lucide lucide-trash-icon lucide-trash text-error w-6 h-6 hover:text-red-600 hover:bg-hover p-1 rounded-lg cursor-pointer transition-all duration-200 ease-in-out active:scale-95"
+            >
+              <path d="M3 6h18" />
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- No Attachments Message -->
+        <div *ngIf="!isLoadingAttachments && existingAttachments.length === 0 && newAttachments.length === 0" 
+             class="text-center py-4 text-gray-400 text-sm">
+          No attachments found for this bug.
         </div>
       </div>
     </div>

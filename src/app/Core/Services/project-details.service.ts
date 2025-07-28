@@ -126,7 +126,7 @@ export interface BugDetailsResponse {
       projectId: string;
       name: string;
     };
-    attachments: any[];
+    attachments: BugAttachment[];
     bugAssignmentUser: Array<{
       userName: string;
     }>;
@@ -151,6 +151,45 @@ export interface DeleteBugResponse {
   success: boolean;
   message: string;
   errors: any;
+}
+
+export interface AddCommentRequest {
+  bugid: string;
+  userid: string;
+  Text: string;
+  textDate: string; // ISO datetime string (e.g., "2025-07-28T14:30:00.000Z") - camelCase to match backend expectation
+}
+
+export interface AddCommentResponse {
+  success: boolean;
+  message: string;
+  errors: any;
+}
+
+export interface BugComment {
+  userName: string;
+  text: string;
+  textDate: string; // ISO datetime string from backend (camelCase to match backend response)
+}
+
+export interface GetCommentsResponse {
+  data: BugComment[];
+  success: boolean;
+  message: string;
+  errors: any;
+}
+
+export interface UploadAttachmentResponse {
+  success: boolean;
+  message: string;
+  errors: any;
+}
+
+export interface BugAttachment {
+  attachmentId: string;
+  fileName: string;
+  filePath: string;
+  createdDate: string;
 }
 
 @Injectable({
@@ -681,6 +720,43 @@ export class ProjectDetailsService {
       );
   }
 
+  // Add comment to bug
+  addBugComment(commentData: AddCommentRequest): Observable<AddCommentResponse> {
+    return this.authService.makeAuthenticatedRequest<AddCommentResponse>('POST', '/bugs/comment', commentData)
+      .pipe(
+        catchError(error => {
+          console.error('Failed to add comment:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Get all comments for a bug
+  getBugComments(bugId: string): Observable<GetCommentsResponse> {
+    return this.authService.makeAuthenticatedRequest<GetCommentsResponse>('GET', `/bugs/${bugId}/comments`)
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            // Sort comments by textDate in descending order (newest first)
+            const sortedComments = response.data.sort((a, b) => {
+              const dateA = new Date(a.textDate);
+              const dateB = new Date(b.textDate);
+              return dateB.getTime() - dateA.getTime();
+            });
+            return {
+              ...response,
+              data: sortedComments
+            };
+          }
+          return response;
+        }),
+        catchError(error => {
+          console.error(`Failed to get comments for bug ${bugId}:`, error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   // Load assignee information for multiple bugs using the new bug details endpoint
   private async loadBugAssignees(bugs: Bug[]): Promise<Bug[]> {
     console.log('Loading assignees for', bugs.length, 'bugs using new bug details endpoint');
@@ -757,5 +833,30 @@ export class ProjectDetailsService {
   clearProject(): void {
     this.projectDataSubject.next(null);
     this.errorSubject.next(null);
+  }
+
+  // Upload attachment to bug
+  uploadAttachment(bugId: string, file: File): Observable<UploadAttachmentResponse> {
+    const formData = new FormData();
+    formData.append('File', file);
+
+    // For file uploads, we need to make a manual HTTP request since makeAuthenticatedRequest 
+    // expects JSON and sets content-type to application/json
+    const token = this.authService.getToken();
+    let headers: any = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.http.post<UploadAttachmentResponse>(
+      `http://localhost:5279/api/bugs/${bugId}/attachments`,
+      formData,
+      { headers }
+    ).pipe(
+      catchError(error => {
+        console.error('Upload attachment error:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }

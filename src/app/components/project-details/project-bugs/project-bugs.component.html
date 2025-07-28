@@ -70,8 +70,8 @@
           <td class="px-4 py-3">
             <div class="flex justify-center gap-3 text-sm">
               <app-edit-bug [bug]="bug" />
-              <app-add-ticket />
-              <app-add-attachment />
+              <app-add-ticket [bug]="bug" />
+              <app-add-attachment [bug]="bug" />
               <app-delete-bug [bug]="bug" />
             </div>
           </td>
