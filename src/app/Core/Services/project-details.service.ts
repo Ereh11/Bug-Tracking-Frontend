@@ -147,6 +147,12 @@ export interface AssignBugRequest {
   assigneddate: string;
 }
 
+export interface DeleteBugResponse {
+  success: boolean;
+  message: string;
+  errors: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -570,6 +576,32 @@ export class ProjectDetailsService {
         }),
         catchError(error => {
           this.errorSubject.next(error.message || 'Failed to update bug');
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Delete bug using the new endpoint
+  deleteBug(bugId: string): Observable<DeleteBugResponse> {
+    return this.authService.makeAuthenticatedRequest<DeleteBugResponse>('DELETE', `/bugs/${bugId}`)
+      .pipe(
+        switchMap(response => {
+          if (!response.success) {
+            throw new Error(response.message || 'Failed to delete bug');
+          }
+          
+          console.log('Bug deleted successfully:', response.message);
+          
+          // Reload project data to reflect the deletion
+          const currentProject = this.currentProjectData;
+          if (currentProject?.info?.id) {
+            this.loadProject(currentProject.info.id).subscribe();
+          }
+          
+          return of(response);
+        }),
+        catchError(error => {
+          this.errorSubject.next(error.message || 'Failed to delete bug');
           return throwError(() => error);
         })
       );
