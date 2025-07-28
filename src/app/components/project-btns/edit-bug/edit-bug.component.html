@@ -1,5 +1,5 @@
 <i
-  (click)="showEditBugPopup = true"
+  (click)="openEditModal()"
   class="fa-solid text-primary cursor-pointer fa-pen-to-square active:scale-95"
 ></i>
 
@@ -164,13 +164,15 @@
     <div class="flex justify-end gap-2 mt-6">
       <button
         (click)="updateBug()"
-        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+        [disabled]="isUpdating"
+        class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Update Bug
+        {{ isUpdating ? 'Updating...' : 'Update Bug' }}
       </button>
       <button
         (click)="cancelEditBug()"
-        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95"
+        [disabled]="isUpdating"
+        class="text-white px-4 py-2 border border-action rounded hover:bg-member active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Cancel
       </button>

@@ -32,8 +32,10 @@ export class ProjectBugsComponent implements OnInit, OnDestroy {
     // Subscribe to project data changes to get bugs
     this.subscriptions.push(
       this.projectDetailsService.projectData$.subscribe(projectData => {
+        console.log('ProjectBugsComponent received projectData update:', projectData);
         this.bugs = projectData?.bugs || [];
         this.projectId = projectData?.info?.id || '';
+        console.log('Updated bugs in component:', this.bugs.map(b => ({ id: b.id, title: b.title, assignedTo: b.assignedTo })));
       })
     );
   }
@@ -79,22 +81,6 @@ export class ProjectBugsComponent implements OnInit, OnDestroy {
       });
     } else {
       console.error('Cannot add bug: project not loaded or missing project info');
-    }
-  }
-
-  onUpdateBug(bugId: string, updates: Partial<Bug>): void {
-    const currentProject = this.projectDetailsService.currentProjectData;
-    if (currentProject?.info?.id) {
-      this.projectDetailsService.updateBug(currentProject.info.id, bugId, updates).subscribe({
-        next: (updatedProject) => {
-          console.log('Bug updated successfully:', updatedProject);
-        },
-        error: (error) => {
-          console.error('Failed to update bug:', error);
-        }
-      });
-    } else {
-      console.error('Cannot update bug: project not loaded or missing project info');
     }
   }
 
