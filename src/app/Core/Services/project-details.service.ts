@@ -136,6 +136,17 @@ export interface BugDetailsResponse {
   errors: any;
 }
 
+export interface BugAssignee {
+  bugId: string;
+  userId: string;
+  assignedDate: string;
+}
+
+export interface AssignBugRequest {
+  userid: string;
+  assigneddate: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -611,6 +622,28 @@ export class ProjectDetailsService {
           if (error.status !== 404) {
             this.errorSubject.next(error.message || 'Failed to get bug assignees');
           }
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Assign bug to user
+  assignBugToUser(bugId: string, assignmentData: AssignBugRequest): Observable<any> {
+    return this.authService.makeAuthenticatedRequest<any>('POST', `/bugs/${bugId}/assign`, assignmentData)
+      .pipe(
+        catchError(error => {
+          console.error(`Failed to assign bug ${bugId}:`, error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Unassign bug from user
+  unassignBugFromUser(bugId: string, userId: string): Observable<any> {
+    return this.authService.makeAuthenticatedRequest<any>('DELETE', `/bugs/${bugId}/assignees/${userId}`)
+      .pipe(
+        catchError(error => {
+          console.error(`Failed to unassign bug ${bugId} from user ${userId}:`, error);
           return throwError(() => error);
         })
       );
