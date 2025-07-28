@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ProjectDetailsService, Bug, Member, BugAssignee, AssignBugRequest} from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { Bug, Member, BugAssignee, AssignBugRequest } from '../../../Core/interfaces';
 
 @Component({
   selector: 'app-assign-bug',

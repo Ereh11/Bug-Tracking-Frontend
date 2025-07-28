@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ProjectDetailsService, Bug, Member } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { Bug, Member } from '../../../Core/interfaces';
 
 @Component({
   selector: 'app-edit-bug',

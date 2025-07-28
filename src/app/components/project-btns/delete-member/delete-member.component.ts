@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProjectDetailsService, Member } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { Member } from '../../../Core/interfaces';
 import { AuthService } from '../../../Core/Services/auth.service';
 
 @Component({
@@ -22,7 +23,16 @@ export class DeleteMemberComponent {
     private authService: AuthService
   ) {}
 
-  get isManager(): boolean {
+  get canDeleteMember(): boolean {
+    return this.isCurrentUserAdmin() || this.isCurrentUserProjectManager();
+  }
+
+  private isCurrentUserAdmin(): boolean {
+    const userRoles = this.authService.getCurrentUserRoles();
+    return userRoles.includes('admin');
+  }
+
+  private isCurrentUserProjectManager(): boolean {
     const currentUserId = this.authService.getCurrentUserId();
     const currentProject = this.projectDetailsService.currentProjectData;
     
@@ -31,8 +41,8 @@ export class DeleteMemberComponent {
   }
 
   confirmDelete() {
-    if (!this.isManager) {
-      this.errorMessage = 'Only project managers can delete members';
+    if (!this.canDeleteMember) {
+      this.errorMessage = 'Only admins and project managers can delete members';
       this.showConfirmPopup = false;
       return;
     }

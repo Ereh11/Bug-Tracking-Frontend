@@ -5,7 +5,8 @@ import { AddBugComponent } from '../../project-btns/add-bug/add-bug.component';
 import { EditBugComponent } from '../../project-btns/edit-bug/edit-bug.component';
 import { AddAttachmentComponent } from '../../project-btns/add-attachment/add-attachment.component';
 import { AddTicketComponent } from '../../project-btns/add-ticket/add-ticket.component';
-import { ProjectDetailsService, Bug } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { Bug } from '../../../Core/interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({

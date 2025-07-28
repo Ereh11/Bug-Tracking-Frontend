@@ -6,16 +6,7 @@ import { PaginationComponent } from './pagination/pagination.component';
 import { UserRoleComponent } from './user-role/user-role.component';
 import { AddBtnComponent } from './add-btn/add-btn.component';
 import { FilterComponent } from './filter/filter.component';
-
-// Define pagination interface to match backend response
-interface PaginationInfo {
-  totalRecords: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasNextPage?: boolean;
-  hasPreviousPage?: boolean;
-}
+import { PaginatedResponse } from '../../Core/interfaces';
 
 @Component({
   selector: 'app-projects',
@@ -41,7 +32,7 @@ export class ProjectsComponent {
   // Pagination properties
   currentPage = 1;
   pageSize = 8;
-  paginationInfo: PaginationInfo | null = null;
+  paginationInfo: PaginatedResponse<any> | null = null;
   
   @ViewChild('dropdownWrapper') dropdownRef!: ElementRef;
   statusOptions = [
@@ -85,7 +76,7 @@ export class ProjectsComponent {
   }
 
   // Handle pagination info update from project component
-  onPaginationChange(paginationInfo: PaginationInfo) {
+  onPaginationChange(paginationInfo: PaginatedResponse<any>) {
     this.paginationInfo = paginationInfo;
   }
 

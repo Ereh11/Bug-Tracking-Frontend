@@ -9,7 +9,8 @@ import {
   AbstractControl,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { AuthService, RegisterRequest } from '../../Core/Services/auth.service';
+import { AuthService } from '../../Core/Services/auth.service';
+import { RegisterRequest } from '../../Core/interfaces';
 
 @Component({
   selector: 'app-sign-up',

@@ -1,15 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-// Define the pagination interface to match backend response
-interface PaginationInfo {
-  totalRecords: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasNextPage?: boolean;
-  hasPreviousPage?: boolean;
-}
+import { PaginatedResponse } from '../../../Core/interfaces';
 
 @Component({
   selector: 'app-pagination',
@@ -18,7 +9,7 @@ interface PaginationInfo {
   styleUrl: './pagination.component.css'
 })
 export class PaginationComponent implements OnChanges {
-  @Input() paginationInfo: PaginationInfo | null = null;
+  @Input() paginationInfo: PaginatedResponse<any> | null = null;
   @Output() pageChange = new EventEmitter<number>();
 
   currentPage: number = 1;

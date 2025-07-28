@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ProjectDetailsService, Bug, BugComment, AddCommentRequest } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { Bug, BugComment, AddCommentRequest } from '../../../Core/interfaces';
 import { AuthService } from '../../../Core/Services/auth.service';
 
 @Component({

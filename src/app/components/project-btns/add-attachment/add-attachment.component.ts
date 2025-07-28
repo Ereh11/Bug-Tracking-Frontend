@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ProjectDetailsService, UploadAttachmentResponse, Bug, BugAttachment, BugDetailsResponse } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { environment } from '../../../../environments/environment';
+import { UploadAttachmentResponse, Bug, BugAttachment, BugDetailsResponse } from '../../../Core/interfaces';
 
 @Component({
   selector: 'app-add-attachment',
@@ -163,7 +165,7 @@ export class AddAttachmentComponent {
 
   viewExistingFile(attachment: BugAttachment): void {
     // Create a full URL for the attachment
-    const fileUrl = `http://localhost:5279${attachment.filePath}`;
+    const fileUrl = `${environment.fileServerUrl}${attachment.filePath}`;
     window.open(fileUrl, '_blank');
   }
 

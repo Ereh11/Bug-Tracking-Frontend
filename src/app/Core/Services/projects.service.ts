@@ -1,103 +1,27 @@
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { AuthService, ApiResponse } from '../../Core/Services/auth.service';
-
-export interface CreateProjectRequest {
-  name: string;
-  description: string;
-  status: number;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-}
-
-export interface ProjectMember {
-  projectId: string;
-  userId: string;
-  notes: string;
-  joinedDate: string;
-}
-
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  isActive: boolean;
-  roles?: string[];
-}
-
-export interface Manager {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  isActive: boolean;
-  roles?: string[] | null;
-}
-
-export interface Bug {
-  id: string;
-  title: string;
-  description: string;
-  status: number;
-  priority: number;
-}
-
-export interface Project {
-  projectId: string;
-  name: string;
-  description: string;
-  status: number;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-  manager?: Manager | null;
-  users: User[];
-  bugs: Bug[];
-}
-
-export interface UserProject {
-  projectId: string;
-  userId: string;
-  notes: string;
-  joinedDate: Date;
-  project?: Project;
-}
-
-// Add pagination interfaces to match backend response
-export interface PaginationParams {
-  pageNumber: number;
-  pageSize: number;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  totalRecords: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-  hasNextPage?: boolean;
-  hasPreviousPage?: boolean;
-}
-
-export interface BackendPaginatedResponse<T> {
-  pageNumber: number;
-  pageSize: number;
-  totalRecords: number;
-  totalPages: number;
-  data: T[];
-  success: boolean;
-  message: string;
-  errors: any;
-}
+import { AuthService } from '../../Core/Services/auth.service';
+import { environment } from '../../../environments/environment';
+import { 
+  ApiResponse, 
+  PaginationParams,
+  PaginatedResponse,
+  BackendPaginatedResponse,
+  CreateProjectRequest, 
+  ProjectMember, 
+  BackendUser as User,
+  ProjectSummary,
+  BackendProjectData,
+  Project,
+  UserProject
+} from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProjectService {
-  private apiUrl = 'http://localhost:5279/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private authService: AuthService) {}
 
@@ -126,27 +50,308 @@ export class ProjectService {
           }
         }),
         catchError(error => {
-          console.error('Error fetching paginated projects:', error);
           return throwError(() => new Error(error.message || 'Failed to retrieve projects'));
         })
       );
   }
 
   /**
-   * Get user projects with pagination
+   * Get user projects with pagination (includes both member and manager roles)
    */
   getUserProjectsPaginated(userId: string, pageNumber: number = 1, pageSize: number = 8): Observable<PaginatedResponse<Project>> {
     if (!userId) {
       return throwError(() => new Error('User ID is required'));
     }
 
+    // First try the standard user projects endpoint
     const url = `/Projects/user/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
     
     return this.authService.makeAuthenticatedRequest<BackendPaginatedResponse<Project>>('GET', url)
       .pipe(
         map(response => {
           if (response.success && response.data) {
-            // Transform backend response to our interface
+            console.log('User projects response:', response);
+            
+            // Handle responses that might not have pagination metadata
+            const data = Array.isArray(response.data) ? response.data : [];
+            const totalRecords = response.totalRecords ?? data.length;
+            const currentPageNumber = response.pageNumber ?? pageNumber;
+            const currentPageSize = response.pageSize ?? pageSize;
+            const totalPages = response.totalPages ?? Math.ceil(totalRecords / currentPageSize);
+            
+            return {
+              data: data,
+              totalRecords: totalRecords,
+              pageNumber: currentPageNumber,
+              pageSize: currentPageSize,
+              totalPages: totalPages,
+              hasNextPage: currentPageNumber < totalPages,
+              hasPreviousPage: currentPageNumber > 1
+            };
+          } else {
+            throw new Error(response.message || 'Failed to retrieve user projects');
+          }
+        }),
+        catchError(error => {
+          console.error('Error fetching user projects:', error);
+          console.log('Trying fallback: get all projects and filter by user involvement...');
+          
+          // Fallback: Get all projects and filter for ones where user is member or manager
+          return this.getFilteredProjectsByUserInvolvement(userId, pageNumber, pageSize);
+        })
+      );
+  }
+
+  /**
+   * Get all projects and filter for ones where user is involved (member or manager)
+   */
+  private getFilteredProjectsByUserInvolvement(userId: string, pageNumber: number = 1, pageSize: number = 8): Observable<PaginatedResponse<Project>> {
+    console.log(`Getting all projects and filtering for user involvement: ${userId}`);
+    
+    // Get all projects without pagination first
+    return this.authService.makeAuthenticatedRequest<BackendPaginatedResponse<Project>>('GET', '/Projects?pageNumber=1&pageSize=1000')
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            console.log(`Retrieved ${response.data.length} total projects for filtering`);
+            
+            // Filter projects where user is either a member or manager
+            const userProjects = response.data.filter(project => {
+              // Check if user is a manager
+              const isManager = project.manager && project.manager.id === userId;
+              
+              // Check if user is a member
+              const isMember = project.users && project.users.some((user: any) => user.id === userId || user.userId === userId);
+              
+              const isInvolved = isManager || isMember;
+              
+              if (isInvolved) {
+                const role = isManager ? 'manager' : 'member';
+                console.log(`User is ${role} of project: ${project.name}`);
+              }
+              
+              return isInvolved;
+            });
+
+            console.log(`Found ${userProjects.length} projects where user is involved`);
+
+            // Apply pagination to filtered results
+            const startIndex = (pageNumber - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const paginatedProjects = userProjects.slice(startIndex, endIndex);
+            const totalPages = Math.ceil(userProjects.length / pageSize);
+
+            return {
+              data: paginatedProjects,
+              totalRecords: userProjects.length,
+              pageNumber: pageNumber,
+              pageSize: pageSize,
+              totalPages: totalPages,
+              hasNextPage: pageNumber < totalPages,
+              hasPreviousPage: pageNumber > 1
+            };
+          } else {
+            throw new Error(response.message || 'Failed to retrieve projects');
+          }
+        }),
+        catchError(error => {
+          console.error('Failed to get all projects for filtering:', error);
+          // If this also fails, try the alternative endpoints as last resort
+          return this.tryAlternativeUserProjectsEndpoints(userId, pageNumber, pageSize);
+        })
+      );
+  }
+
+  /**
+   * Try alternative endpoints for user projects
+   */
+  private tryAlternativeUserProjectsEndpoints(userId: string, pageNumber: number = 1, pageSize: number = 8): Observable<PaginatedResponse<Project>> {
+    console.log('Trying alternative endpoints for user projects...');
+    
+    // First try to get both member and manager projects separately, then combine
+    return this.getMemberAndManagerProjects(userId, pageNumber, pageSize).pipe(
+      catchError(() => {
+        // If combined approach fails, try individual endpoints
+        return this.tryIndividualEndpoints(userId, pageNumber, pageSize);
+      })
+    );
+  }
+
+  /**
+   * Get both member and manager projects and combine them
+   */
+  private getMemberAndManagerProjects(userId: string, pageNumber: number = 1, pageSize: number = 8): Observable<PaginatedResponse<Project>> {
+    console.log('Trying to get both member and manager projects...');
+    
+    // Try to get member projects
+    const memberRequest = this.authService.makeAuthenticatedRequest<BackendPaginatedResponse<Project>>('GET', 
+      `/Projects/user/${userId}/member?pageNumber=1&pageSize=100`);
+    
+    // Try to get manager projects  
+    const managerRequest = this.authService.makeAuthenticatedRequest<BackendPaginatedResponse<Project>>('GET',
+      `/Projects/user/${userId}/manager?pageNumber=1&pageSize=100`);
+
+    // Combine both results
+    return new Observable(observer => {
+      const allProjects: Project[] = [];
+      let completedRequests = 0;
+      let hasAnySuccess = false;
+
+      const processResults = () => {
+        if (completedRequests === 2) {
+          // Remove duplicates based on projectId
+          const uniqueProjects = allProjects.filter((project, index, self) => 
+            index === self.findIndex(p => p.projectId === project.projectId)
+          );
+
+          // Apply pagination to the combined results
+          const startIndex = (pageNumber - 1) * pageSize;
+          const endIndex = startIndex + pageSize;
+          const paginatedProjects = uniqueProjects.slice(startIndex, endIndex);
+          const totalPages = Math.ceil(uniqueProjects.length / pageSize);
+
+          console.log(`Combined ${uniqueProjects.length} unique projects (${allProjects.length} total before deduplication)`);
+
+          observer.next({
+            data: paginatedProjects,
+            totalRecords: uniqueProjects.length,
+            pageNumber: pageNumber,
+            pageSize: pageSize,
+            totalPages: totalPages,
+            hasNextPage: pageNumber < totalPages,
+            hasPreviousPage: pageNumber > 1
+          });
+          observer.complete();
+        }
+      };
+
+      // Get member projects
+      memberRequest.subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            console.log(`Found ${response.data.length} member projects`);
+            allProjects.push(...response.data);
+            hasAnySuccess = true;
+          }
+          completedRequests++;
+          processResults();
+        },
+        error: (error) => {
+          console.warn('Member projects request failed:', error);
+          completedRequests++;
+          processResults();
+        }
+      });
+
+      // Get manager projects
+      managerRequest.subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            console.log(`Found ${response.data.length} manager projects`);
+            allProjects.push(...response.data);
+            hasAnySuccess = true;
+          }
+          completedRequests++;
+          processResults();
+        },
+        error: (error) => {
+          console.warn('Manager projects request failed:', error);
+          completedRequests++;
+          processResults();
+        }
+      });
+    });
+  }
+
+  /**
+   * Try individual endpoints as fallback
+   */
+  private tryIndividualEndpoints(userId: string, pageNumber: number = 1, pageSize: number = 8): Observable<PaginatedResponse<Project>> {
+    console.log('Trying individual fallback endpoints...');
+    
+    // Try different endpoint variations that might work for both members and managers
+    const endpoints = [
+      // Member endpoints
+      `/Projects/user/${userId}/member?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      `/Projects/user/${userId}/all?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      `/Projects/members/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      `/User/${userId}/projects?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      // Manager endpoints  
+      `/Projects/user/${userId}/manager?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      `/Projects/manager/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      `/User/${userId}/managed-projects?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      // Combined endpoints
+      `/Projects/user/${userId}/both?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      `/User/${userId}/all-projects?pageNumber=${pageNumber}&pageSize=${pageSize}`
+    ];
+
+    const tryEndpoint = (index: number): Observable<PaginatedResponse<Project>> => {
+      if (index >= endpoints.length) {
+        // If all endpoints fail, return empty result instead of error
+        console.warn('All user project endpoints failed, returning empty result');
+        return new Observable(observer => {
+          observer.next({
+            data: [],
+            totalRecords: 0,
+            pageNumber: 1,
+            pageSize: pageSize,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPreviousPage: false
+          });
+          observer.complete();
+        });
+      }
+
+      const url = endpoints[index];
+      console.log(`Trying endpoint ${index + 1}: ${url}`);
+      
+      return this.authService.makeAuthenticatedRequest<BackendPaginatedResponse<Project>>('GET', url)
+        .pipe(
+          map(response => {
+            if (response.success && response.data) {
+              console.log(`Endpoint ${index + 1} succeeded:`, response);
+              
+              // Handle responses that might not have pagination metadata
+              const data = Array.isArray(response.data) ? response.data : [];
+              const totalRecords = response.totalRecords ?? data.length;
+              const currentPageNumber = response.pageNumber ?? pageNumber;
+              const currentPageSize = response.pageSize ?? pageSize;
+              const totalPages = response.totalPages ?? Math.ceil(totalRecords / currentPageSize);
+              
+              return {
+                data: data,
+                totalRecords: totalRecords,
+                pageNumber: currentPageNumber,
+                pageSize: currentPageSize,
+                totalPages: totalPages,
+                hasNextPage: currentPageNumber < totalPages,
+                hasPreviousPage: currentPageNumber > 1
+              };
+            } else {
+              throw new Error(`Endpoint ${index + 1} failed: ${response.message}`);
+            }
+          }),
+          catchError(error => {
+            console.warn(`Endpoint ${index + 1} failed:`, error);
+            return tryEndpoint(index + 1);
+          })
+        );
+    };
+
+    return tryEndpoint(0);
+  }
+
+  /**
+   * Fallback method for getting only projects where user is a member
+   */
+  private getUserProjectsMemberOnly(userId: string, pageNumber: number = 1, pageSize: number = 8): Observable<PaginatedResponse<Project>> {
+    const url = `/Projects/user/${userId}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+    
+    return this.authService.makeAuthenticatedRequest<BackendPaginatedResponse<Project>>('GET', url)
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
             return {
               data: response.data,
               totalRecords: response.totalRecords,
@@ -161,7 +366,6 @@ export class ProjectService {
           }
         }),
         catchError(error => {
-          console.error('Error fetching user projects:', error);
           return throwError(() => new Error(error.message || 'Failed to retrieve user projects'));
         })
       );
@@ -170,322 +374,305 @@ export class ProjectService {
   /**
    * Get projects for current user with pagination based on role
    */
-  getProjectsForCurrentUserPaginated(pageNumber: number = 1, pageSize: number = 8): Observable<{ projects: UserProject[], pagination: PaginatedResponse<any> }> {
+  getCurrentUserProjectsPaginated(pageNumber: number = 1, pageSize: number = 8): Observable<PaginatedResponse<Project>> {
     const currentUserId = this.authService.getCurrentUserId();
+    const userRoles = this.authService.getCurrentUserRoles();
+    
+    console.log(`Getting projects for user: ${currentUserId}, roles:`, userRoles);
     
     if (!currentUserId) {
-      return throwError(() => new Error('User not authenticated'));
+      return throwError(() => new Error('User is not authenticated'));
     }
 
-    let projectsObservable: Observable<PaginatedResponse<Project>>;
+    // Check if user is admin
+    const isAdmin = userRoles.some((role: string) => 
+      role.toLowerCase() === 'admin' || role.toLowerCase() === 'administrator'
+    );
 
-    if (this.authService.isAdmin()) {
-      projectsObservable = this.getAllProjectsPaginated(pageNumber, pageSize);
+    if (isAdmin) {
+      // If admin, get all projects
+      console.log('User is admin, getting all projects');
+      return this.getAllProjectsPaginated(pageNumber, pageSize);
     } else {
-      projectsObservable = this.getUserProjectsPaginated(currentUserId, pageNumber, pageSize);
+      // If regular user, use the comprehensive filtering approach
+      // This will get all projects and filter for ones where user is member or manager
+      console.log('User is regular user, using comprehensive filtering approach');
+      return this.getFilteredProjectsByUserInvolvement(currentUserId, pageNumber, pageSize);
+    }
+  }
+
+  /**
+   * Get all projects (admin only)
+   * @deprecated Use getAllProjectsPaginated instead
+   */
+  getAllProjects(): Observable<Project[]> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<Project[]>>('GET', '/Projects')
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || 'Failed to fetch projects');
+          }
+        }),
+        catchError(error => {
+          return throwError(() => new Error(error.message || 'Failed to retrieve projects'));
+        })
+      );
+  }
+
+  /**
+   * Get all projects as user projects (for filtering/mapping)
+   * @deprecated Use getCurrentUserProjectsPaginated instead
+   */
+  getAllProjectsAsUserProjects(): Observable<UserProject[]> {
+    const currentUserId = this.authService.getCurrentUserId();
+    if (!currentUserId) {
+      return throwError(() => new Error('User is not authenticated'));
     }
 
-    return projectsObservable.pipe(
-      map(paginatedResponse => {
-        const userProjects = paginatedResponse.data.map(project => ({
-          projectId: project.projectId,
-          userId: currentUserId,
-          notes: project.description || '',
-          joinedDate: new Date(project.startDate),
-          project: project
-        }));
-
-        return {
-          projects: userProjects,
-          pagination: paginatedResponse
-        };
-      }),
+    return this.getAllProjects().pipe(
+      map(projects => projects.map(project => ({
+        projectId: project.projectId,
+        userId: currentUserId,
+        notes: '',
+        joinedDate: new Date(),
+        project: project
+      }))),
       catchError(error => {
-        console.error('Error fetching projects for current user:', error);
         return throwError(() => new Error(error.message || 'Failed to retrieve projects'));
       })
     );
   }
 
-  // Keep existing non-paginated methods for backward compatibility
-  getAllProjects(): Observable<Project[]> {
-    const url = `/Projects`;
-    
-    return this.authService.makeAuthenticatedRequest<ApiResponse<Project[]>>('GET', url)
-      .pipe(
-        map(response => {
-          if (response.success && response.data) {
-            return response.data;
-          } else {
-            throw new Error(response.message || 'Failed to retrieve all projects');
-          }
-        }),
-        catchError(error => {
-          console.error('Error fetching all projects:', error);
-          return throwError(() => new Error(error.message || 'Failed to retrieve all projects'));
-        })
-      );
-  }
-
-  getAllProjectsAsUserProjects(): Observable<UserProject[]> {
-    const currentUserId = this.authService.getCurrentUserId();
-    
-    if (!currentUserId) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return this.getAllProjects().pipe(
-      map(projects => {
-        return projects.map(project => ({
-          projectId: project.projectId,
-          userId: currentUserId,
-          notes: project.description || '',
-          joinedDate: new Date(project.startDate),
-          project: project
-        }));
-      }),
-      catchError(error => {
-        console.error('Error fetching all projects as user projects:', error);
-        return throwError(() => new Error(error.message || 'Failed to retrieve all projects'));
-      })
-    );
-  }
-
-  getProjectsForCurrentUser(): Observable<UserProject[]> {
-    if (this.authService.isAdmin()) {
-      return this.getAllProjectsAsUserProjects();
-    } else {
-      return this.getCurrentUserProjects();
-    }
-  }
-
-  getCurrentUserProjects(): Observable<UserProject[]> {
-    const currentUserId = this.authService.getCurrentUserId();
-    
-    if (!currentUserId) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    return this.getUserProjects(currentUserId);
-  }
-
+  /**
+   * Get user projects
+   * @deprecated Use getUserProjectsPaginated instead
+   */
   getUserProjects(userId: string): Observable<UserProject[]> {
     if (!userId) {
       return throwError(() => new Error('User ID is required'));
     }
 
-    const url = `/Projects/user/${userId}`;
-    
-    return this.authService.makeAuthenticatedRequest<ApiResponse<Project[]>>('GET', url)
+    return this.authService.makeAuthenticatedRequest<ApiResponse<UserProject[]>>('GET', `/Projects/user/${userId}`)
       .pipe(
         map(response => {
           if (response.success && response.data) {
-            return response.data.map(project => ({
-              projectId: project.projectId,
-              userId: userId,
-              notes: '',
-              joinedDate: new Date(project.startDate),
-              project: project
+            return response.data.map(userProject => ({
+              ...userProject,
+              joinedDate: new Date(userProject.joinedDate)
             }));
           } else {
-            throw new Error(response.message || 'Failed to retrieve user projects');
+            throw new Error(response.message || 'Failed to fetch user projects');
           }
         }),
         catchError(error => {
-          console.error('Error fetching user projects:', error);
           return throwError(() => new Error(error.message || 'Failed to retrieve user projects'));
         })
       );
   }
 
-  // ... keep all other existing methods unchanged ...
+  /**
+   * Get project details by ID
+   */
   getProjectById(projectId: string): Observable<Project> {
-    if (!projectId) {
-      return throwError(() => new Error('Project ID is required'));
-    }
-
-    const url = `/Projects/${projectId}`;
-    
-    return this.authService.makeAuthenticatedRequest<ApiResponse<Project>>('GET', url)
+    return this.authService.makeAuthenticatedRequest<ApiResponse<Project>>('GET', `/Projects/${projectId}`)
       .pipe(
         map(response => {
           if (response.success && response.data) {
             return response.data;
           } else {
-            throw new Error(response.message || 'Failed to retrieve project details');
+            throw new Error(response.message || 'Failed to fetch project details');
           }
         }),
         catchError(error => {
-          console.error('Error fetching project details:', error);
           return throwError(() => new Error(error.message || 'Failed to retrieve project details'));
         })
       );
   }
 
+  /**
+   * Check if user has access to project
+   */
   hasProjectAccess(projectId: string): Observable<boolean> {
-    if (this.authService.isAdmin()) {
-      return this.getAllProjects().pipe(
-        map(projects => {
-          return projects.some(project => project.projectId === projectId);
-        }),
+    return this.authService.makeAuthenticatedRequest<ApiResponse<boolean>>('GET', `/Projects/${projectId}/access`)
+      .pipe(
+        map(response => response.success && response.data),
         catchError(error => {
-          console.error('Error checking project access:', error);
-          return throwError(() => error);
+          return throwError(() => new Error(error.message || 'Failed to check project access'));
         })
       );
+  }
+
+  /**
+   * Check if user has access to project (alternative implementation)
+   */
+  checkProjectAccess(projectId: string): Observable<boolean> {
+    const currentUserId = this.authService.getCurrentUserId();
+    const userRoles = this.authService.getCurrentUserRoles();
+    
+    if (!currentUserId) {
+      return throwError(() => new Error('User is not authenticated'));
     }
 
-    return this.getCurrentUserProjects().pipe(
-      map(userProjects => {
-        return userProjects.some(project => project.projectId === projectId);
-      }),
+    // Admin has access to all projects
+    const isAdmin = userRoles.some((role: string) => 
+      role.toLowerCase() === 'admin' || role.toLowerCase() === 'administrator'
+    );
+    
+    if (isAdmin) {
+      return new Observable(observer => {
+        observer.next(true);
+        observer.complete();
+      });
+    }
+
+    // For regular users, check if they're part of the project
+    return this.hasProjectAccess(projectId).pipe(
       catchError(error => {
-        console.error('Error checking project access:', error);
-        return throwError(() => error);
+        return throwError(() => new Error(error.message || 'Failed to check project access'));
       })
     );
   }
 
-  leaveProject(projectId: string): Observable<boolean> {
-    const currentUserId = this.authService.getCurrentUserId();
-    
-    if (!currentUserId) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    if (!projectId) {
-      return throwError(() => new Error('Project ID is required'));
-    }
-
-    const url = `/ProjectMembers/${projectId}/users/${currentUserId}`;
-    
-    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('DELETE', url)
+  /**
+   * Leave a project
+   */
+  leaveProject(projectId: string): Observable<ApiResponse<any>> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('DELETE', `/Projects/${projectId}/leave`)
       .pipe(
         map(response => {
           if (response.success) {
-            return true;
+            return response;
           } else {
             throw new Error(response.message || 'Failed to leave project');
           }
         }),
         catchError(error => {
-          console.error('Error leaving project:', error);
           return throwError(() => new Error(error.message || 'Failed to leave project'));
         })
       );
   }
 
-  deleteProject(projectId: string): Observable<boolean> {
-    if (!projectId) {
-      return throwError(() => new Error('Project ID is required'));
-    }
-
-    const url = `/Projects/${projectId}`;
-    
-    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('DELETE', url)
+  /**
+   * Delete a project (admin only)
+   */
+  deleteProject(projectId: string): Observable<ApiResponse<any>> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('DELETE', `/Projects/${projectId}`)
       .pipe(
         map(response => {
           if (response.success) {
-            return true;
+            return response;
           } else {
             throw new Error(response.message || 'Failed to delete project');
           }
         }),
         catchError(error => {
-          console.error('Error deleting project:', error);
           return throwError(() => new Error(error.message || 'Failed to delete project'));
         })
       );
   }
 
-  createProject(projectData: CreateProjectRequest): Observable<Project> {
-    if (!projectData.name || !projectData.name.trim()) {
-      return throwError(() => new Error('Project name is required'));
-    }
-
-    const url = `/Projects`;
-    
-    // Send the object directly as backend expects (no wrapper, status as number)
+  /**
+   * Create a new project
+   */
+  createProject(projectData: CreateProjectRequest): Observable<any> {
     const requestBody = {
       name: projectData.name,
       description: projectData.description,
-      status: projectData.status, // Send as number (1-5)
-      startDate: projectData.startDate,
-      endDate: projectData.endDate,
-      isActive: projectData.isActive
+      status: Number(projectData.status),      
+      startDate: projectData.startDate,       
+      endDate: projectData.endDate,           
+      isActive: Boolean(projectData.isActive) 
     };
-    
-    console.log('Sending project data:', requestBody);
-    
-    return this.authService.makeAuthenticatedRequest<ApiResponse<Project>>('POST', url, requestBody)
+
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('POST', '/Projects', requestBody)
       .pipe(
         map(response => {
-          if (response.success && response.data) {
-            return response.data;
+          if (response.success) {
+            return response;
           } else {
             throw new Error(response.message || 'Failed to create project');
           }
         }),
         catchError(error => {
-          console.error('Error creating project:', error);
-          let errorMessage = 'Failed to create project';
-          
-          if (error.status === 403) {
-            errorMessage = 'You do not have permission to create projects';
-          } else if (error.status === 400) {
-            // Handle validation errors from backend
-            if (error.error?.errors && Array.isArray(error.error.errors)) {
-              // Handle array of error objects with code and message
-              const validationErrors = error.error.errors;
-              const errorMessages: string[] = [];
-              
-              validationErrors.forEach((err: any) => {
-                if (err.message) {
-                  errorMessages.push(err.message);
-                }
-              });
-              
-              if (errorMessages.length > 0) {
-                errorMessage = errorMessages.join('. ');
-              } else {
-                errorMessage = error.error?.message || 'Invalid project data provided';
-              }
-            } else if (error.error?.errors && typeof error.error.errors === 'object') {
-              // Handle object-based validation errors (ASP.NET Core ModelState)
-              const validationErrors = error.error.errors;
-              const errorMessages: string[] = [];
-              
-              for (const field in validationErrors) {
-                if (validationErrors[field] && Array.isArray(validationErrors[field])) {
-                  validationErrors[field].forEach((msg: string) => {
-                    errorMessages.push(msg);
-                  });
-                }
-              }
-              
-              if (errorMessages.length > 0) {
-                errorMessage = errorMessages.join('. ');
-              } else {
-                errorMessage = error.error?.message || 'Invalid project data provided';
-              }
-            } else if (error.error?.message) {
-              errorMessage = error.error.message;
-            } else if (typeof error.error === 'string') {
-              errorMessage = error.error;
-            } else {
-              errorMessage = 'Invalid project data provided';
-            }
-          } else if (error.status === 409) {
-            errorMessage = 'A project with this name already exists';
-          } else if (error.status === 401) {
-            errorMessage = 'You are not authenticated. Please log in again.';
-          } else if (error.status >= 500) {
-            errorMessage = 'Server error. Please try again later.';
-          } else if (error.message) {
-            errorMessage = error.message;
+          return throwError(() => new Error(error.message || 'Failed to create project'));
+        })
+      );
+  }
+
+  /**
+   * Update project
+   */
+  updateProject(projectId: string, projectData: Partial<CreateProjectRequest>): Observable<any> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('PUT', `/Projects/${projectId}`, projectData)
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response;
+          } else {
+            throw new Error(response.message || 'Failed to update project');
           }
-          
-          return throwError(() => new Error(errorMessage));
+        }),
+        catchError(error => {
+          return throwError(() => new Error(error.message || 'Failed to update project'));
+        })
+      );
+  }
+
+  /**
+   * Add member to project
+   */
+  addProjectMember(projectMember: ProjectMember): Observable<any> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('POST', '/Projects/members', projectMember)
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response;
+          } else {
+            throw new Error(response.message || 'Failed to add project member');
+          }
+        }),
+        catchError(error => {
+          return throwError(() => new Error(error.message || 'Failed to add project member'));
+        })
+      );
+  }
+
+  /**
+   * Remove member from project
+   */
+  removeProjectMember(projectId: string, userId: string): Observable<any> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('DELETE', `/Projects/${projectId}/members/${userId}`)
+      .pipe(
+        map(response => {
+          if (response.success) {
+            return response;
+          } else {
+            throw new Error(response.message || 'Failed to remove project member');
+          }
+        }),
+        catchError(error => {
+          return throwError(() => new Error(error.message || 'Failed to remove project member'));
+        })
+      );
+  }
+
+  /**
+   * Get project members
+   */
+  getProjectMembers(projectId: string): Observable<User[]> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<User[]>>('GET', `/Projects/${projectId}/members`)
+      .pipe(
+        map(response => {
+          if (response.success && response.data) {
+            return response.data;
+          } else {
+            throw new Error(response.message || 'Failed to fetch project members');
+          }
+        }),
+        catchError(error => {
+          return throwError(() => new Error(error.message || 'Failed to retrieve project members'));
         })
       );
   }

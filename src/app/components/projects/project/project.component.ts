@@ -2,7 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { LucideAngularModule } from 'lucide-angular';
 import { RouterModule, Router } from '@angular/router';
-import { ProjectService, UserProject, PaginatedResponse } from '../../../Core/Services/projects.service';
+import { ProjectService } from '../../../Core/Services/projects.service';
+import { UserProject, PaginatedResponse, BackendUser } from '../../../Core/interfaces';
 import { AuthService } from '../../../Core/Services/auth.service'; 
 
 @Component({
@@ -91,19 +92,37 @@ export class ProjectComponent implements OnInit {
       });
     } else {
       // For regular users, get their projects
-      this.projectService.getProjectsForCurrentUserPaginated(this.currentPage, this.pageSize).subscribe({
+      this.projectService.getCurrentUserProjectsPaginated(this.currentPage, this.pageSize).subscribe({
         next: (response: any) => {
           console.log('User projects loaded:', response);
           
-          this.projects = response.projects;
-          this.paginationInfo = response.pagination;
+          // The response has 'data' property, not 'projects'
+          this.projects = response.data || [];
+          
+          // Debug: Log the structure of the first project to understand the format
+          if (this.projects.length > 0) {
+            console.log('First project structure:', this.projects[0]);
+            console.log('Project keys:', Object.keys(this.projects[0]));
+          }
+          
+          this.paginationInfo = {
+            data: response.data || [],
+            totalRecords: response.totalRecords,
+            pageNumber: response.pageNumber,
+            pageSize: response.pageSize,
+            totalPages: response.totalPages,
+            hasNextPage: response.hasNextPage,
+            hasPreviousPage: response.hasPreviousPage
+          };
           this.isLoading = false;
           
           // Emit pagination info to parent component
-          this.paginationChange.emit(response.pagination);
+          this.paginationChange.emit(this.paginationInfo);
           
-          if (!response.projects || response.projects.length === 0) {
+          if (!this.projects || this.projects.length === 0) {
             console.warn('No projects found for the current page.');
+          } else {
+            console.log(`Found ${this.projects.length} projects for user`);
           }
         },
         error: (error: any) => {
@@ -116,6 +135,7 @@ export class ProjectComponent implements OnInit {
 
   private handleLoadError(error: any) {
     this.isLoading = false;
+    this.projects = []; // Ensure projects is always an array
     
     if (error.status === 500 || error.message?.includes('500') || error.message?.includes('Internal Server Error')) {
       this.errorType = 'server';
@@ -252,28 +272,77 @@ export class ProjectComponent implements OnInit {
     return 'Leave Project';
   }
 
-  getProjectDisplayName(project: UserProject, index: number): string {
-    return project.project?.name || `Project #${index + 1}`;
+  getProjectDisplayName(project: any, index: number): string {
+    // Handle both UserProject format (with nested project) and direct Project format
+    if (project.project?.name) {
+      console.log(`Using UserProject format for project name: ${project.project.name}`);
+      return project.project.name; // UserProject format
+    } else if (project.name) {
+      console.log(`Using direct Project format for project name: ${project.name}`);
+      return project.name; // Direct Project format
+    }
+    console.warn(`No name found for project at index ${index}, using fallback`);
+    return `Project #${index + 1}`;
   }
 
-  getProjectDescription(project: UserProject): string {
-    return project.notes || 
-           project.project?.description || 
-           'No description available for this project.';
+  getProjectDescription(project: any): string {
+    // Handle both UserProject format (with nested project) and direct Project format
+    if (project.notes) {
+      return project.notes; // UserProject notes
+    } else if (project.project?.description) {
+      return project.project.description; // UserProject format
+    } else if (project.description) {
+      return project.description; // Direct Project format
+    }
+    return 'No description available for this project.';
   }
 
-  getProjectStatusDisplay(project: UserProject): string {
-    if (project.project?.isActive) {
+  getProjectStatusDisplay(project: any): string {
+    // Handle both UserProject format (with nested project) and direct Project format
+    let isActive: boolean;
+    if (project.project !== undefined) {
+      isActive = project.project?.isActive; // UserProject format
+    } else {
+      isActive = project.isActive; // Direct Project format
+    }
+    
+    if (isActive) {
       return 'Active';
     }
     return 'Inactive';
   }
 
-  getProjectStatusColorClass(project: UserProject): string {
-    if (project.project?.isActive) {
+  getProjectStatusColorClass(project: any): string {
+    // Handle both UserProject format (with nested project) and direct Project format
+    let isActive: boolean;
+    if (project.project !== undefined) {
+      isActive = project.project?.isActive; // UserProject format
+    } else {
+      isActive = project.isActive; // Direct Project format
+    }
+    
+    if (isActive) {
       return 'bg-completed';
     }
     return 'bg-error';
+  }
+
+  getProjectStartDate(project: any): string {
+    // Handle both UserProject format (with joinedDate) and direct Project format (with startDate)
+    let dateToFormat: Date | string | null = null;
+    
+    if (project.joinedDate) {
+      dateToFormat = project.joinedDate; // UserProject format
+    } else if (project.startDate) {
+      dateToFormat = project.startDate; // Direct Project format
+    }
+    
+    if (dateToFormat) {
+      const date = typeof dateToFormat === 'string' ? new Date(dateToFormat) : dateToFormat;
+      return this.formatDate(date);
+    }
+    
+    return 'Unknown';
   }
 
   formatDate(date: Date): string {
@@ -319,7 +388,7 @@ export class ProjectComponent implements OnInit {
       return false;
     }
     
-    const currentUser = project.project.users.find(user => user.id === this.currentUserId);
+    const currentUser = project.project.users.find((user: BackendUser) => user.id === this.currentUserId);
     return currentUser?.roles?.includes('admin') || 
            currentUser?.roles?.includes('Admin') || 
            this.authService.isAdmin();
@@ -407,7 +476,7 @@ export class ProjectComponent implements OnInit {
     if (!this.currentUserId || !project.project) {
       return false;
     }
-    return project.project.users.some(user => user.id === this.currentUserId);
+    return project.project.users.some((user: BackendUser) => user.id === this.currentUserId);
   }
 
   getUserRoleInProject(project: UserProject): string {
@@ -415,7 +484,7 @@ export class ProjectComponent implements OnInit {
       return 'Not a member';
     }
     
-    const currentUser = project.project.users.find(user => user.id === this.currentUserId);
+    const currentUser = project.project.users.find((user: BackendUser) => user.id === this.currentUserId);
     if (!currentUser) {
       return 'Not a member';
     }

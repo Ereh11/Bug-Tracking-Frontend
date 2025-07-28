@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { EditManagerComponent } from '../../project-btns/edit-manager/edit-manager.component';
-import { ProjectDetailsService, Manager } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { Manager } from '../../../Core/interfaces';
 import { Subscription } from 'rxjs';
 
 @Component({

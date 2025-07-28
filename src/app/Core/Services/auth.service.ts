@@ -1,60 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
-
-export interface User {
-  userId: string;
-  email: string;
-  roles: string[];
-  token: string;
-  refreshToken: string;
-  expiration: string;
-}
-
-export interface UserProfile {
-  userId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string;
-  roles: string[];
-}
-
-export interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message: string;
-  errors: any;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-}
+import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, throwError, of, interval } from 'rxjs';
+import { catchError, map, switchMap, takeWhile } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
+import { User, UserProfile, ApiResponse, LoginRequest, RegisterRequest } from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:5279/api';
+  private apiUrl = environment.apiUrl;
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
   private isRefreshing = false;
+  private tokenCheckInterval: any;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private router: Router) {
     const storedUserData = this.getCookie('currentUser');
     this.currentUserSubject = new BehaviorSubject<User | null>(
       storedUserData ? JSON.parse(storedUserData) : null
     );
     this.currentUser = this.currentUserSubject.asObservable();
+    
+    // Start token validation check
+    this.startTokenValidationCheck();
   }
 
   public get currentUserValue(): User | null {
@@ -142,13 +112,15 @@ export class AuthService {
     
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
+      
       return {
         userId: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || payload.userId,
         email: payload.sub || payload.email,
         firstName: payload.firstName,
         lastName: payload.lastName,
         fullName: payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
-        roles: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || []
+        roles: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || [],
+        exp: payload.exp // Add expiration field
       };
     } catch (error) {
       console.error('Error extracting user data from token:', error);
@@ -254,6 +226,8 @@ export class AuthService {
             const userData = response.data;
             this.setAuthCookie(userData);
             this.currentUserSubject.next(userData);
+            // Start token validation check after successful login
+            this.startTokenValidationCheck();
             return userData;
           } else {
             throw new Error(response.message || 'Login failed');
@@ -261,7 +235,8 @@ export class AuthService {
         }),
         catchError(error => {
           console.error('Login error', error);
-          return throwError(() => new Error(error.error?.message || 'Login failed'));
+          // Pass through the original error structure instead of creating a new Error
+          return throwError(() => error);
         })
       );
   }
@@ -288,6 +263,7 @@ export class AuthService {
 
   // Logout method
   logout(): void {
+    this.stopTokenValidationCheck();
     this.makeAuthenticatedRequest('POST', '/users/logout', {}).subscribe({
       next: () => this.completeLogout(),
       error: () => this.completeLogout(),
@@ -296,9 +272,13 @@ export class AuthService {
   }
 
   private completeLogout(): void {
-    this.deleteCookie('currentUser');
-    this.deleteCookie('auth_token');
+    this.stopTokenValidationCheck();
+    this.clearAuthData();
     this.currentUserSubject.next(null);
+    
+    // Redirect to login page
+    console.log('Redirecting to login page after logout');
+    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {
@@ -332,6 +312,110 @@ export class AuthService {
     const userDataForCookie = { ...user };
     this.setCookie('currentUser', JSON.stringify(userDataForCookie), 30);
     this.setCookie('auth_token', user.token, 30);
+  }
+
+  // NEW: Check if token is valid and not expired
+  public isTokenValid(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      return false;
+    }
+
+    try {
+      // Decode JWT token to check expiration
+      const tokenData = this.extractUserDataFromToken(token);
+      
+      if (!tokenData) {
+        return false;
+      }
+
+      if (!tokenData.exp) {
+        return false;
+      }
+
+      // Check if token is expired (exp is in seconds, Date.now() is in milliseconds)
+      const currentTime = Math.floor(Date.now() / 1000);
+      const isValid = tokenData.exp > currentTime;
+      
+      return isValid;
+    } catch (error) {
+      console.error('Error validating token:', error);
+      return false;
+    }
+  }
+
+  // NEW: Clear all authentication data
+  public clearAuthData(): void {
+    // Clear from memory
+    this.currentUserSubject.next(null);
+    
+    // Clear from localStorage
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userProfile');
+    
+    // Clear from cookies
+    this.deleteCookie('currentUser');
+    this.deleteCookie('token');
+    this.deleteCookie('refreshToken');
+    
+    // Clear any other stored data
+    sessionStorage.clear();
+    
+    console.log('All authentication data cleared');
+  }
+
+  // NEW: Set redirect URL for after login
+  public setRedirectUrl(url: string): void {
+    if (url && url !== '/login' && url !== '/signup') {
+      localStorage.setItem('redirectUrl', url);
+    }
+  }
+
+  // NEW: Get and clear redirect URL
+  public getAndClearRedirectUrl(): string | null {
+    const redirectUrl = localStorage.getItem('redirectUrl');
+    if (redirectUrl) {
+      localStorage.removeItem('redirectUrl');
+      return redirectUrl;
+    }
+    return null;
+  }
+
+  // NEW: Force logout (clear data and redirect)
+  public forceLogout(reason?: string): void {
+    console.log('Force logout triggered:', reason);
+    this.clearAuthData();
+    this.stopTokenValidationCheck();
+    this.currentUserSubject.next(null);
+    
+    // Redirect to login page
+    console.log('Redirecting to login page after force logout');
+    this.router.navigate(['/login']);
+  }
+
+  // NEW: Start periodic token validation check
+  private startTokenValidationCheck(): void {
+    // Check token every 30 seconds
+    this.tokenCheckInterval = setInterval(() => {
+      if (this.isLoggedIn && !this.isTokenValid()) {
+        console.log('Token expired during validation check, forcing logout...');
+        this.forceLogout('Token expired');
+        // Emit null to update current user subject
+        this.currentUserSubject.next(null);
+        // Window location change to login is handled by guards
+        window.location.href = '/login';
+      }
+    }, 30000); // 30 seconds
+  }
+
+  // NEW: Stop token validation check
+  private stopTokenValidationCheck(): void {
+    if (this.tokenCheckInterval) {
+      clearInterval(this.tokenCheckInterval);
+      this.tokenCheckInterval = null;
+    }
   }
 
   private setCookie(name: string, value: string, days: number): void {

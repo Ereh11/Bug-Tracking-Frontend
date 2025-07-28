@@ -8,7 +8,8 @@ import {
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
-import { AuthService, LoginRequest } from '../../Core/Services/auth.service';
+import { AuthService } from '../../Core/Services/auth.service';
+import { LoginRequest } from '../../Core/interfaces';
 
 @Component({
   selector: 'app-sign-in',
@@ -51,12 +52,11 @@ export class SignInComponent implements OnInit {
     this.signInForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
-      rememberMe: [false],
     });
 
-    // If user is already logged in, redirect to home or dashboard
-    if (this.authService.isLoggedIn) {
-      this.router.navigate(['/project']);
+    // If user is already logged in, redirect to home page
+    if (this.authService.isLoggedIn && this.authService.isTokenValid()) {
+      this.router.navigate(['/']);
     }
   }
 
@@ -102,8 +102,20 @@ export class SignInComponent implements OnInit {
       next: (user) => {
         this.isLoading = false;
         console.log('Login successful:', user);
-        // Navigate to dashboard or home page after successful login
-        this.leaveAndNavigate('/');
+        console.log('Current auth state after login:', this.authService.isLoggedIn);
+        
+        // Get stored redirect URL or default to projects page
+        const redirectUrl = this.authService.getAndClearRedirectUrl() || '/';
+        console.log('Redirecting to:', redirectUrl);
+        
+        // Use router.navigateByUrl with replaceUrl to avoid history issues
+        this.router.navigateByUrl(redirectUrl, { replaceUrl: true }).then(() => {
+          console.log('Navigation completed to:', redirectUrl);
+        }).catch(err => {
+          console.error('Navigation failed:', err);
+          // Fallback: force page reload to the home page
+          window.location.href = '/';
+        });
       },
       error: (error) => {
         this.isLoading = false;
@@ -111,29 +123,26 @@ export class SignInComponent implements OnInit {
 
         // Handle different error scenarios with user-friendly messages
         if (error.status === 0) {
-          this.authError = 'Unable to connect to the server. Please check your internet connection and try again.';
+          this.authError = 'Unable to connect to the server. Please check your internet connection.';
         } else if (error.status === 401) {
-          this.authError = 'The email or password you entered is incorrect. Please check your credentials and try again.';
+          this.authError = 'Invalid email or password. Please check your credentials.';
         } else if (error.status === 403) {
-          this.authError = 'Your account has been locked or disabled. Please contact support for assistance.';
+          this.authError = 'Account locked or disabled. Please contact support.';
         } else if (error.status === 404) {
-          this.authError = 'No account found with this email address. Please check your email or sign up for a new account.';
+          this.authError = 'No account found with this email address.';
         } else if (error.status === 429) {
-          this.authError = 'Too many login attempts. Please wait a few minutes before trying again.';
+          this.authError = 'Too many login attempts. Please wait before trying again.';
         } else if (error.status >= 500) {
-          this.authError = 'Our servers are currently experiencing issues. Please try again in a few moments.';
-        } else if (error.message?.includes('Invalid credentials') || error.message?.includes('not found')) {
-          this.authError = 'The email or password you entered is incorrect. Please double-check your credentials.';
-        } else if (error.message?.includes('locked') || error.message?.includes('disabled')) {
-          this.authError = 'Your account is temporarily locked. Please contact support or try again later.';
+          this.authError = 'Server error. Please try again later.';
         } else {
-          this.authError = 'Sign in failed. Please check your credentials and try again.';
+          // Use the error message from the server if available, otherwise use default
+          this.authError = error.error?.message || error.message || 'Authentication failed. Please try again.';
         }
 
-        // Auto-dismiss error after 8 seconds
+        // Auto-dismiss error after 6 seconds
         setTimeout(() => {
           this.authError = null;
-        }, 8000);
+        }, 6000);
       },
     });
   }

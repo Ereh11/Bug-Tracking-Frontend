@@ -1,4 +1,5 @@
 <button
+  *ngIf="isCurrentUserAdmin()"
   (click)="openChangeManagerPopup()"
   class="border border-action text-white px-2 py-2 rounded-md hover:bg-action active:scale-95"
 >
@@ -25,51 +26,77 @@
       Select a member to be the new project manager.
     </p>
 
-    <div
-      *ngFor="let member of teamMembers"
-      class="flex items-center gap-3 mb-3 cursor-pointer p-2 rounded-md transition"
-      (click)="selectManager(member)"
-    >
-      <input
-        type="checkbox"
-        [checked]="selectedManager === member"
-        class="w-4 h-4 rounded-xl border border-primary accent-primary bg-screen cursor-pointer"
-        (click)="$event.stopPropagation(); selectManager(member)"
-      />
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mb-4">
+      <p class="text-red-400 text-sm">{{ errorMessage }}</p>
+    </div>
 
-      <div class="flex-1">
-        <div class="flex items-center gap-2">
-          <div
-            class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
-            [ngClass]="member.color"
-          >
-            {{ member.name[0] }}
-          </div>
-          <div>
-            <p class="font-semibold">{{ member.name }}</p>
-            <p class="text-sm text-gray-400">{{ member.email }}</p>
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="text-center py-4">
+      <i class="fa-solid fa-spinner animate-spin text-gray-400"></i>
+      <p class="text-sm text-gray-400 mt-2">Loading available users...</p>
+    </div>
+
+    <!-- User List -->
+    <div *ngIf="!isLoading" class="max-h-64 overflow-y-auto">
+      <div
+        *ngFor="let user of availableUsers"
+        class="flex items-center gap-3 mb-3 cursor-pointer p-2 rounded-md transition hover:bg-gray-700/50"
+        [class.bg-blue-600]="selectedManager === user"
+        [class.bg-opacity-20]="selectedManager === user"
+        (click)="selectManager(user)"
+      >
+        <input
+          type="radio"
+          [checked]="selectedManager === user"
+          name="manager"
+          class="w-4 h-4 rounded-xl border border-primary accent-primary bg-screen cursor-pointer"
+          (click)="$event.stopPropagation(); selectManager(user)"
+        />
+
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <div
+              class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white bg-primary"
+            >
+              {{ getUserInitials(user) }}
+            </div>
+            <div>
+              <p class="font-semibold">{{ getUserDisplayName(user) }}</p>
+              <p class="text-sm text-gray-400">{{ user.email }}</p>
+            </div>
           </div>
         </div>
+
+        <span
+          class="text-xs px-2 py-1 rounded-full font-semibold text-white bg-blue-600"
+        >
+          User
+        </span>
       </div>
 
-      <span
-        class="text-xs px-2 py-1 rounded-full font-semibold text-white"
-        [ngClass]="member.badgeColor || 'bg-error'"
-      >
-        {{ member.role }}
-      </span>
+      <!-- No Users Message -->
+      <div *ngIf="availableUsers.length === 0" class="text-center py-4 text-gray-400 text-sm">
+        No users available
+      </div>
     </div>
 
     <div class="flex justify-end gap-2 mt-6">
       <button
         (click)="confirmManagerChange()"
-        class="bg-primary px-4 py-2 rounded hover:bg-primary/80 active:scale-95"
+        [disabled]="!selectedManager || isUpdating"
+        class="bg-primary px-4 py-2 rounded hover:bg-primary/80 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Confirm Change
+        <span *ngIf="!isUpdating">Confirm Change</span>
+        <span *ngIf="isUpdating" class="flex items-center gap-2">
+          <i class="fa-solid fa-spinner animate-spin"></i>
+          Updating...
+        </span>
       </button>
       <button
         (click)="closePopup()"
-        class="border border-action px-4 py-2 rounded hover:bg-member active:scale-95"
+        [disabled]="isUpdating"
+        class="border border-action px-4 py-2 rounded hover:bg-member active:scale-95 disabled:opacity-50"
       >
         Cancel
       </button>

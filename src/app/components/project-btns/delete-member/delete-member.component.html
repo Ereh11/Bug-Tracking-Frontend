@@ -1,5 +1,5 @@
-<!-- Delete Button - Only shown if current user is manager -->
-<ng-container *ngIf="isManager">
+<!-- Delete Button - Only shown if current user is admin or manager -->
+<ng-container *ngIf="canDeleteMember">
   <svg
     (click)="showConfirmPopup = true; $event.stopPropagation()"
     xmlns="http://www.w3.org/2000/svg"

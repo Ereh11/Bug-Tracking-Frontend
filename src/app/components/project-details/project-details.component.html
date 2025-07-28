@@ -17,14 +17,6 @@
         <h3 class="text-red-400 font-semibold">Error Loading Project</h3>
       </div>
       <p class="text-red-300 mb-4">{{ error }}</p>
-      <div class="flex gap-2">
-        <button 
-          (click)="refreshProject()" 
-          class="bg-primary text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-        >
-          <i class="fa-solid fa-refresh mr-2"></i>Try Again
-        </button>
-      </div>
     </div>
   </div>
 
@@ -50,15 +42,5 @@
         <app-project-bugs />
       </div>
     </section>
-
-    <!-- Refresh Button -->
-    <div class="flex justify-end">
-      <button 
-        (click)="refreshProject()" 
-        class="bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
-      >
-        <i class="fa-solid fa-refresh mr-2"></i>Refresh Data
-      </button>
-    </div>
   </ng-container>
 </div>

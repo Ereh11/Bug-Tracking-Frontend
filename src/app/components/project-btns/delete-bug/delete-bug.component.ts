@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { ProjectDetailsService, Bug } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { Bug } from '../../../Core/interfaces';
 
 @Component({
   selector: 'app-delete-bug',

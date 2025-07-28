@@ -80,20 +80,4 @@ export class ProjectDetailsComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.projectDetailsService.clearProject();
   }
-
-  refreshProject(): void {
-    const refresh$ = this.projectDetailsService.refreshProject();
-    if (refresh$) {
-      this.subscriptions.push(
-        refresh$.subscribe({
-          next: (data) => {
-            console.log('Project refreshed successfully:', data);
-          },
-          error: (error) => {
-            console.error('Failed to refresh project:', error);
-          }
-        })
-      );
-    }
-  }
 }

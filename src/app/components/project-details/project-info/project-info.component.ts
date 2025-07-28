@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProjectDetailsService, ProjectInfo } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { AuthService } from '../../../Core/Services/auth.service';
+import { ProjectInfo, Manager, ProjectData } from '../../../Core/interfaces';
 import { Subscription } from 'rxjs';
 import { EditProjectComponent } from '../../project-btns/edit-project/edit-project.component';
 
@@ -13,19 +15,25 @@ import { EditProjectComponent } from '../../project-btns/edit-project/edit-proje
 })
 export class ProjectInfoComponent implements OnInit, OnDestroy {
   projectInfo: ProjectInfo | null = null;
+  manager: Manager | null = null;
   loading = false;
   error: string | null = null;
   private subscriptions: Subscription[] = [];
 
-  constructor(private projectDetailsService: ProjectDetailsService) {}
+  constructor(
+    private projectDetailsService: ProjectDetailsService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     // Subscribe to project data
     this.subscriptions.push(
       this.projectDetailsService.projectData$.subscribe(
-        data => {
+        (data: ProjectData | null) => {
           this.projectInfo = data?.info || null;
+          this.manager = data?.manager || null;
           console.log('Project info updated:', this.projectInfo);
+          console.log('Project manager updated:', this.manager);
         }
       )
     );
@@ -77,6 +85,48 @@ export class ProjectInfoComponent implements OnInit, OnDestroy {
   }
 
   get canShowEditButton(): boolean {
-    return this.hasValidProjectInfo;
+    if (!this.hasValidProjectInfo) {
+      return false;
+    }
+
+    // Check if user is admin (can edit any project)
+    if (this.isCurrentUserAdmin()) {
+      return true;
+    }
+
+    // Check if user is manager of this specific project
+    if (this.isCurrentUserProjectManager()) {
+      return true;
+    }
+
+    // Regular members cannot edit projects
+    return false;
+  }
+
+  /**
+   * Check if current user is admin
+   */
+  private isCurrentUserAdmin(): boolean {
+    const userRoles = this.authService.getCurrentUserRoles();
+    return userRoles.some((role: string) => 
+      role.toLowerCase().includes('admin')
+    );
+  }
+
+  /**
+   * Check if current user is the manager of this project
+   */
+  private isCurrentUserProjectManager(): boolean {
+    if (!this.manager) {
+      return false;
+    }
+
+    const currentUserId = this.authService.getCurrentUserId();
+    if (!currentUserId) {
+      return false;
+    }
+
+    // Check if current user ID matches the project manager ID
+    return this.manager.id === currentUserId;
   }
 }

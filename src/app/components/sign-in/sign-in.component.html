@@ -92,25 +92,6 @@
         </div>
 
         <div class="flex flex-col gap-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="remember-me"
-                formControlName="rememberMe"
-                class="h-4 w-4 cursor-pointer accent-purple-0 text-purple-0 border-gray-300 rounded focus:ring-purple-0"
-              />
-              <label
-                for="remember-me"
-                class="text-sm cursor-pointer text-gray-700"
-              >
-                Remember me
-              </label>
-            </div>
-            <a class="text-sm text-purple-1 cursor-pointer hover:underline"
-              >Forgot password?</a
-            >
-          </div>
           <button
   type="submit"
   [disabled]="signInForm.invalid || isLoading"

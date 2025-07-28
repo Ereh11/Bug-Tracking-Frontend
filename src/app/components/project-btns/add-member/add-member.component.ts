@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProjectDetailsService, SystemUser } from '../../../Core/Services/project-details.service';
+import { ProjectDetailsService } from '../../../Core/Services/project-details.service';
+import { SystemUser } from '../../../Core/interfaces';
 import { AuthService } from '../../../Core/Services/auth.service';
 import { Subscription } from 'rxjs';
 

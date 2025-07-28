@@ -4,7 +4,10 @@
       <i class="fa-solid fa-users"></i>
       <h1 class="text-xl font-bold">Project Members</h1>
     </div>
-    <app-add-member (memberAdded)="addMemberToProject($event)" />
+    <app-add-member 
+      *ngIf="canShowAddMemberButton"
+      (memberAdded)="addMemberToProject($event)" 
+    />
   </div>
   <span class="text-gray-400 text-sm">
     Team members assigned to this project

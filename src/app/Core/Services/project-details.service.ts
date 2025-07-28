@@ -1,201 +1,37 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, catchError, throwError, map, switchMap, firstValueFrom, from, filter, of } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, throwError, map, switchMap, firstValueFrom, from, of } from 'rxjs';
 import { AuthService } from './auth.service';
-
-// Backend response interfaces
-export interface ApiResponse<T> {
-  data: T;
-  success: boolean;
-  message: string;
-  errors: string[] | null;
-}
-
-export interface BackendUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  isActive: boolean;
-  roles?: string[] | null;
-}
-
-export interface BackendBug {
-  id: string;
-  title: string;
-  description: string;
-  status: number; // 1 = New, 2 = In Progress, 3 = Resolved, etc.
-  priority: number; // 1 = Low, 2 = Medium, 3 = High, 4 = Critical
-}
-
-export interface BackendProjectData {
-  projectId: string;
-  name: string;
-  description: string;
-  status: number;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-  manager: BackendUser;
-  users: BackendUser[];
-  bugs: BackendBug[];
-}
-
-// Frontend interfaces (transformed from backend)
-export interface Bug {
-  id: string;
-  title: string;
-  description: string;
-  status: 'New' | 'In Progress' | 'Resolved' | 'Closed' | 'Reopened' | 'Assigned';
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  assignedTo: string | null;
-}
-
-export interface Member {
-  id: string;
-  name: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'Manager' | 'Developer' | 'Tester' | 'Designer';
-  isActive: boolean;
-}
-
-export interface ProjectInfo {
-  id: string;
-  name: string;
-  description: string;
-  status: number;
-  startDate: Date;
-  endDate: Date;
-  isActive: boolean;
-}
-
-export interface Manager {
-  id: string;
-  name: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  isActive: boolean;
-}
-
-export interface ProjectData {
-  info: ProjectInfo;
-  manager: Manager;
-  members: Member[];
-  bugs: Bug[];
-}
-export interface SystemUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  isActive: boolean;
-  roles: { id: string; name: string; description: string }[];
-}
-
-export interface ChangeAssignmentDto {
-  olduserid: string | null;
-  newuserid: string | null;
-  assigneddate: string;
-}
-
-export interface UpdateBugRequest {
-  title: string;
-  description: string;
-  status: number;
-  priority: number;
-  changeassignmentdto: ChangeAssignmentDto;
-}
-
-export interface UpdateBugResponse {
-  success: boolean;
-  message: string;
-  errors: any;
-}
-
-export interface BugDetailsResponse {
-  data: {
-    id: string;
-    title: string;
-    description: string;
-    status: number;
-    priority: number;
-    project: {
-      projectId: string;
-      name: string;
-    };
-    attachments: BugAttachment[];
-    bugAssignmentUser: Array<{
-      userName: string;
-    }>;
-  };
-  success: boolean;
-  message: string;
-  errors: any;
-}
-
-export interface BugAssignee {
-  bugId: string;
-  userId: string;
-  assignedDate: string;
-}
-
-export interface AssignBugRequest {
-  userid: string;
-  assigneddate: string;
-}
-
-export interface DeleteBugResponse {
-  success: boolean;
-  message: string;
-  errors: any;
-}
-
-export interface AddCommentRequest {
-  bugid: string;
-  userid: string;
-  Text: string;
-  textDate: string; // ISO datetime string (e.g., "2025-07-28T14:30:00.000Z") - camelCase to match backend expectation
-}
-
-export interface AddCommentResponse {
-  success: boolean;
-  message: string;
-  errors: any;
-}
-
-export interface BugComment {
-  userName: string;
-  text: string;
-  textDate: string; // ISO datetime string from backend (camelCase to match backend response)
-}
-
-export interface GetCommentsResponse {
-  data: BugComment[];
-  success: boolean;
-  message: string;
-  errors: any;
-}
-
-export interface UploadAttachmentResponse {
-  success: boolean;
-  message: string;
-  errors: any;
-}
-
-export interface BugAttachment {
-  attachmentId: string;
-  fileName: string;
-  filePath: string;
-  createdDate: string;
-}
+import { environment } from '../../../environments/environment';
+import {
+  ApiResponse,
+  BackendUser,
+  SystemUser,
+  BackendProjectData,
+  ProjectData,
+  ProjectInfo,
+  Manager,
+  Member,
+  Bug,
+  BackendBug,
+  UpdateBugRequest,
+  UpdateBugResponse,
+  DeleteBugResponse,
+  BugDetailsResponse,
+  AssignBugRequest,
+  AddCommentRequest,
+  AddCommentResponse,
+  GetCommentsResponse,
+  UploadAttachmentResponse,
+  BugAttachment,
+  ChangeAssignmentDto
+} from '../interfaces';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProjectDetailsService {
+  private apiUrl = environment.apiUrl;
   private projectDataSubject = new BehaviorSubject<ProjectData | null>(null);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private errorSubject = new BehaviorSubject<string | null>(null);
@@ -248,26 +84,21 @@ export class ProjectDetailsService {
     'Critical': 4
   };
   loadAllUsers(): void {
-    console.log('Loading all users...');
     this.authService.makeAuthenticatedRequest<ApiResponse<SystemUser[]>>('GET', '/users')
       .pipe(
         map(response => {
           if (!response.success) {
             throw new Error(response.message || 'Failed to load users');
           }
-          console.log('Users loaded successfully:', response.data.length, 'users');
-          console.log('User details:', response.data.map(u => `${u.firstName} ${u.lastName} (${u.id})`));
           return response.data;
         }),
         catchError(error => {
-          console.error('Error loading users:', error);
           return throwError(() => error);
         })
       )
       .subscribe(users => {
         this.allUsersSubject.next(users);
         this.usersLoaded = true;
-        console.log('Users set in allUsersSubject:', users.length);
       });
   }
   // Transform backend data to frontend format
@@ -325,7 +156,6 @@ export class ProjectDetailsService {
 
   // Load project data from backend
   loadProject(projectId: string): Observable<ProjectData> {
-    console.log('Loading project with ID:', projectId);
     this.loadingSubject.next(true);
     this.errorSubject.next(null);
     // Clear any existing project data when starting a new load
@@ -334,24 +164,19 @@ export class ProjectDetailsService {
     return this.authService.makeAuthenticatedRequest<ApiResponse<BackendProjectData>>('GET', `/projects/${projectId}`)
       .pipe(
         switchMap(response => {
-          console.log('Backend response:', response);
           if (!response.success) {
             throw new Error(response.message || 'Failed to load project');
           }
-          console.log('Transforming backend data:', response.data);
           const transformedData = this.transformBackendData(response.data);
-          console.log('Transformed data:', transformedData);
           
           // Load assignee information for all bugs before setting the project data
           return from(
             this.loadBugAssignees(transformedData.bugs).then((bugsWithAssignees: Bug[]) => {
               const updatedData = { ...transformedData, bugs: bugsWithAssignees };
               this.projectDataSubject.next(updatedData);
-              console.log('Updated data with assignees:', updatedData);
               this.loadingSubject.next(false);
               return updatedData;
             }).catch(error => {
-              console.log('Failed to load bug assignees, continuing without them:', error);
               // Keep the original data without assignees
               this.projectDataSubject.next(transformedData);
               this.loadingSubject.next(false);
@@ -360,7 +185,6 @@ export class ProjectDetailsService {
           );
         }),
         catchError(error => {
-          console.error('Error in loadProject:', error);
           this.loadingSubject.next(false);
           this.projectDataSubject.next(null); // Clear project data on error
           this.errorSubject.next(error.message || 'Failed to load project');
@@ -413,6 +237,23 @@ export class ProjectDetailsService {
         }),
         catchError(error => {
           this.errorSubject.next(error.message || 'Failed to update project');
+          return throwError(() => error);
+        })
+      );
+  }
+
+  // Change project manager
+  changeProjectManager(projectId: string, newManagerId: string): Observable<ApiResponse<any>> {
+    return this.authService.makeAuthenticatedRequest<ApiResponse<any>>('POST', `/projects/${projectId}/manager/${newManagerId}`)
+      .pipe(
+        switchMap(response => {
+          if (response.success) {
+            // Reload the project to get updated data with new manager
+            this.loadProject(projectId).subscribe();
+          }
+          return of(response);
+        }),
+        catchError(error => {
           return throwError(() => error);
         })
       );
@@ -576,9 +417,6 @@ export class ProjectDetailsService {
       }
     };
 
-    console.log('Updating bug with data:', updateBugData);
-    console.log('Bug ID being updated:', bugId);
-
     return this.authService.makeAuthenticatedRequest<UpdateBugResponse>('PUT', `/bugs/${bugId}`, updateBugData)
       .pipe(
         switchMap(response => {
@@ -586,23 +424,18 @@ export class ProjectDetailsService {
             throw new Error(response.message || 'Failed to update bug');
           }
           
-          console.log('Bug update response:', response);
-          
           // Add a delay before reloading to allow backend to process
           return from(
             new Promise<UpdateBugResponse>(resolve => {
               setTimeout(() => {
-                console.log('Waiting 2 seconds before reloading project to allow backend processing...');
                 // Since backend returns success message only, reload project data
                 const currentProject = this.currentProjectData;
                 if (currentProject?.info?.id) {
                   this.loadProject(currentProject.info.id).subscribe({
                     next: () => {
-                      console.log('Project reloaded after bug update');
                       resolve(response);
                     },
                     error: (error) => {
-                      console.error('Error reloading project:', error);
                       resolve(response); // Still resolve with the original response
                     }
                   });
@@ -628,8 +461,6 @@ export class ProjectDetailsService {
           if (!response.success) {
             throw new Error(response.message || 'Failed to delete bug');
           }
-          
-          console.log('Bug deleted successfully:', response.message);
           
           // Reload project data to reflect the deletion
           const currentProject = this.currentProjectData;
@@ -678,7 +509,6 @@ export class ProjectDetailsService {
     return this.authService.makeAuthenticatedRequest<BugDetailsResponse>('GET', `/bugs/${bugId}`)
       .pipe(
         catchError(error => {
-          console.error(`Failed to get bug details for ${bugId}:`, error);
           return throwError(() => error);
         })
       );
@@ -703,7 +533,6 @@ export class ProjectDetailsService {
     return this.authService.makeAuthenticatedRequest<any>('POST', `/bugs/${bugId}/assign`, assignmentData)
       .pipe(
         catchError(error => {
-          console.error(`Failed to assign bug ${bugId}:`, error);
           return throwError(() => error);
         })
       );
@@ -714,7 +543,6 @@ export class ProjectDetailsService {
     return this.authService.makeAuthenticatedRequest<any>('DELETE', `/bugs/${bugId}/assignees/${userId}`)
       .pipe(
         catchError(error => {
-          console.error(`Failed to unassign bug ${bugId} from user ${userId}:`, error);
           return throwError(() => error);
         })
       );
@@ -725,7 +553,6 @@ export class ProjectDetailsService {
     return this.authService.makeAuthenticatedRequest<AddCommentResponse>('POST', '/bugs/comment', commentData)
       .pipe(
         catchError(error => {
-          console.error('Failed to add comment:', error);
           return throwError(() => error);
         })
       );
@@ -751,7 +578,6 @@ export class ProjectDetailsService {
           return response;
         }),
         catchError(error => {
-          console.error(`Failed to get comments for bug ${bugId}:`, error);
           return throwError(() => error);
         })
       );
@@ -759,13 +585,10 @@ export class ProjectDetailsService {
 
   // Load assignee information for multiple bugs using the new bug details endpoint
   private async loadBugAssignees(bugs: Bug[]): Promise<Bug[]> {
-    console.log('Loading assignees for', bugs.length, 'bugs using new bug details endpoint');
-    
     const bugsWithAssignees = await Promise.all(
       bugs.map(async (bug) => {
         try {
           const response = await firstValueFrom(this.getBugDetails(bug.id));
-          console.log(`Bug details response for bug ${bug.id}:`, response);
           
           if (response && response.success && response.data) {
             const bugData = response.data;
@@ -775,9 +598,6 @@ export class ProjectDetailsService {
             if (bugData.bugAssignmentUser && bugData.bugAssignmentUser.length > 0) {
               // Get the first assigned user (assuming one assignee per bug for now)
               assigneeName = bugData.bugAssignmentUser[0].userName;
-              console.log(`Bug ${bug.id} assigned to: ${assigneeName}`);
-            } else {
-              console.log(`Bug ${bug.id} has no assignee`);
             }
             
             return {
@@ -785,25 +605,12 @@ export class ProjectDetailsService {
               assignedTo: assigneeName
             };
           }
-          
-          console.log(`Bug ${bug.id} - invalid response or no data`);
           return bug; // Return bug with assignedTo: null if invalid response
         } catch (error: any) {
-          console.error(`Failed to load details for bug ${bug.id}:`, error);
           return bug; // Return bug with assignedTo: null on error
         }
       })
     );
-    
-    console.log('Finished loading assignees. Bugs with assignees:', bugsWithAssignees.filter(b => b.assignedTo).length);
-    console.log('Final bugs array:', bugsWithAssignees.map(b => ({ id: b.id, title: b.title, assignedTo: b.assignedTo })));
-    
-    // Special debug for recently updated bugs
-    const recentUpdateBugId = '4a5ad7a5-1131-4411-6e59-08ddca9b986b'; // The bug from your logs
-    const recentBug = bugsWithAssignees.find(b => b.id === recentUpdateBugId);
-    if (recentBug) {
-      console.log(`DEBUG: Recently updated bug ${recentUpdateBugId} now has assignedTo: "${recentBug.assignedTo}"`);
-    }
     
     return bugsWithAssignees;
   }
@@ -849,12 +656,11 @@ export class ProjectDetailsService {
     }
     
     return this.http.post<UploadAttachmentResponse>(
-      `http://localhost:5279/api/bugs/${bugId}/attachments`,
+      `${this.apiUrl}/bugs/${bugId}/attachments`,
       formData,
       { headers }
     ).pipe(
       catchError(error => {
-        console.error('Upload attachment error:', error);
         return throwError(() => error);
       })
     );

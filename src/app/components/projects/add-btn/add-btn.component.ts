@@ -5,15 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AuthService } from '../../../Core/Services/auth.service';
 import { ProjectService } from '../../../Core/Services/projects.service';
-
-interface CreateProjectRequest {
-  name: string;
-  description: string;
-  status: number;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-}
+import { CreateProjectRequest } from '../../../Core/interfaces';
 
 interface NewProjectForm {
   name: string;
