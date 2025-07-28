@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "build:vercel": "ng build --configuration production",
+    "deploy": "ng build --configuration production --base-href /Bug-Tracking/ && npx angular-cli-ghpages --dir=dist/angular-setup",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "build:css": "npx tailwindcss -i ./src/styles.css -o ./src/output.css --watch"
