@@ -1,3 +1,83 @@
+/* Responsive adjustments for sign-in form */
+@media (max-width: 1024px) {
+  /* Stack layout vertically on tablets and mobile */
+  .sign-in-form {
+    padding: 0;
+  }
+}
+
+/* Height responsiveness for shorter screens */
+@media (max-height: 800px) {
+  /* Reduce spacing on shorter screens */
+  .min-h-screen > div > div {
+    max-height: 90vh;
+  }
+  
+  /* Make the left panel scrollable */
+  .lg\:col-span-6:first-child {
+    overflow-y: auto;
+    max-height: 85vh;
+  }
+}
+
+@media (max-height: 600px) {
+  /* Even more compact for very short screens */
+  .min-h-screen {
+    min-height: auto;
+    padding: 1rem 0;
+  }
+  
+  /* Reduce header sizes */
+  .text-xl {
+    font-size: 1.125rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Mobile optimizations */
+  input[type="email"], input[type="password"], input[type="text"] {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    padding: 0.5rem 0.25rem;
+  }
+  
+  /* Ensure password toggle buttons are easily tappable */
+  button[type="button"] {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even tighter spacing for very small screens */
+  .min-h-screen > div > div {
+    width: 98% !important;
+    max-width: none !important;
+  }
+  
+  /* Adjust input padding for mobile */
+  .pr-10 {
+    padding-right: 2.5rem; /* 40px - enough space for password toggle */
+  }
+}
+
+/* Ensure inputs don't get zoomed on mobile */
+input:focus {
+  outline: none;
+}
+
+/* Better error message spacing on mobile */
+@media (max-width: 640px) {
+  .error-container {
+    margin-top: 0.25rem;
+    padding: 0.75rem;
+  }
+}
+
 /* Shake animation for error messages */
 @keyframes shake {
   0%, 100% {
