@@ -24,6 +24,7 @@
                 [type]="ctrl.type"
                 [formControlName]="ctrl.name"
                 class="peer w-full pl-1 py-2 rounded-md border-2 border-transparent focus:outline-none focus:animate-neon-pulse transition-colors duration-300 relative"
+                [class.pr-10]="ctrl.name === 'password'"
                 placeholder=" "
               />
 
@@ -33,6 +34,21 @@
               >
                 <i [class]="ctrl.icon"></i> {{ ctrl.placeholder }}
               </label>
+
+              <!-- Password visibility toggle -->
+              <button
+                *ngIf="ctrl.name === 'password'"
+                type="button"
+                (click)="togglePasswordVisibility()"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-0 focus:outline-none transition-colors duration-200"
+                tabindex="-1"
+              >
+                <i 
+                  class="fa-solid text-sm"
+                  [class.fa-eye]="!showPassword"
+                  [class.fa-eye-slash]="showPassword"
+                ></i>
+              </button>
             </div>
 
             <!-- Field validation errors -->

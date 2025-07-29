@@ -1,0 +1,65 @@
+/* Responsive adjustments for sign-up form */
+@media (max-width: 1024px) {
+  /* Stack layout vertically on tablets and mobile */
+  .signup-form {
+    padding: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .signup-form input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 0.625rem 0.25rem; /* Slightly more padding on mobile */
+  }
+  
+  /* Adjust icon spacing for smaller screens */
+  .signup-form .absolute.right-2 {
+    right: 0.375rem; /* Slightly closer on mobile */
+  }
+  
+  /* Ensure password toggle buttons are easily tappable */
+  .signup-form button[type="button"] {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0.25rem;
+  }
+  
+  /* Reduce gap between icons on mobile */
+  .signup-form .gap-1 {
+    gap: 0.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Even tighter spacing for very small screens */
+  .signup-form .pr-14 {
+    padding-right: 3.5rem; /* 56px - enough space for both icons */
+  }
+  
+  .signup-form .pr-8 {
+    padding-right: 2.5rem; /* 40px - enough space for single icon */
+  }
+  
+  .signup-form .absolute.right-2 {
+    right: 0.25rem;
+  }
+  
+  /* Make container take full width on very small screens */
+  .min-h-screen > div > div {
+    width: 95% !important;
+    max-width: none !important;
+  }
+}
+
+/* Ensure icons don't overlap with text */
+.signup-form input:focus {
+  outline: none;
+}
+
+/* Better spacing for error messages on mobile */
+@media (max-width: 640px) {
+  .signup-form .error-container {
+    min-height: 1rem;
+    margin-top: 0.25rem;
+  }
+}

@@ -25,6 +25,8 @@ export class SignUpComponent implements OnInit {
   swapBorders = false;
   isSubmitting = false;
   backendErrors: string[] = [];
+  showPassword = false;
+  showConfirmPassword = false;
 
   controls = [
     {
@@ -456,5 +458,21 @@ export class SignUpComponent implements OnInit {
 
   trackByControlName(index: number, item: any): string {
     return item.name;
+  }
+
+  togglePasswordVisibility(field: 'password' | 'confirm'): void {
+    if (field === 'password') {
+      this.showPassword = !this.showPassword;
+      const passwordControl = this.controls.find(ctrl => ctrl.name === 'password');
+      if (passwordControl) {
+        passwordControl.type = this.showPassword ? 'text' : 'password';
+      }
+    } else {
+      this.showConfirmPassword = !this.showConfirmPassword;
+      const confirmControl = this.controls.find(ctrl => ctrl.name === 'confirm');
+      if (confirmControl) {
+        confirmControl.type = this.showConfirmPassword ? 'text' : 'password';
+      }
+    }
   }
 }
