@@ -107,11 +107,15 @@ export class SignInComponent implements OnInit {
         
         // Get stored redirect URL or default to projects page
         const redirectUrl = this.authService.getAndClearRedirectUrl() || '/';
-        console.log('Redirecting to:', redirectUrl);
+        
+        // If redirect URL is welcome page, go to projects instead (users shouldn't return to welcome after login)
+        const finalRedirectUrl = redirectUrl === '/welcome' ? '/' : redirectUrl;
+        
+        console.log('Redirecting to:', finalRedirectUrl);
         
         // Use router.navigateByUrl with replaceUrl to avoid history issues
-        this.router.navigateByUrl(redirectUrl, { replaceUrl: true }).then(() => {
-          console.log('Navigation completed to:', redirectUrl);
+        this.router.navigateByUrl(finalRedirectUrl, { replaceUrl: true }).then(() => {
+          console.log('Navigation completed to:', finalRedirectUrl);
         }).catch(err => {
           console.error('Navigation failed:', err);
           // Fallback: force page reload to the home page
