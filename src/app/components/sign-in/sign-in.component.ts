@@ -24,6 +24,7 @@ export class SignInComponent implements OnInit {
   isLeaving = false;
   swapBorders = false;
   isLoading = false;
+  showPassword = false;
 
   controls = [
     {
@@ -145,5 +146,13 @@ export class SignInComponent implements OnInit {
         }, 6000);
       },
     });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+    const passwordControl = this.controls.find(ctrl => ctrl.name === 'password');
+    if (passwordControl) {
+      passwordControl.type = this.showPassword ? 'text' : 'password';
+    }
   }
 }
