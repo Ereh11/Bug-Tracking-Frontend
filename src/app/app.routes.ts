@@ -27,10 +27,10 @@ export const routes: Routes = [
     component: ProjectsComponent,
     canActivate: [AuthGuard]
   },
+  // Welcome page (accessible after successful registration, before login)
   { 
     path: 'welcome', 
-    component: WelcomeComponent,
-    canActivate: [AuthGuard]
+    component: WelcomeComponent
   },
   { 
     path: 'details', 

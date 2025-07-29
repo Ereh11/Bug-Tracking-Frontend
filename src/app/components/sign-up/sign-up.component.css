@@ -6,10 +6,49 @@
   }
 }
 
+/* Height responsiveness for shorter screens */
+@media (max-height: 800px) {
+  /* Reduce spacing on shorter screens */
+  .min-h-screen > div > div {
+    max-height: 90vh;
+  }
+  
+  .signup-form {
+    gap: 0.5rem;
+  }
+  
+  /* Make the right panel scrollable */
+  .lg\:col-span-6:last-child {
+    overflow-y: auto;
+    max-height: 85vh;
+  }
+}
+
+@media (max-height: 600px) {
+  /* Even more compact for very short screens */
+  .min-h-screen {
+    min-height: auto;
+    padding: 1rem 0;
+  }
+  
+  .signup-form {
+    gap: 0.25rem;
+  }
+  
+  .error-container {
+    min-height: 0.75rem;
+  }
+  
+  /* Reduce header sizes */
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+}
+
 @media (max-width: 640px) {
   .signup-form input {
     font-size: 16px; /* Prevents zoom on iOS */
-    padding: 0.625rem 0.25rem; /* Slightly more padding on mobile */
+    padding: 0.5rem 0.25rem; /* Reduce padding on mobile */
   }
   
   /* Adjust icon spacing for smaller screens */
@@ -46,7 +85,7 @@
   
   /* Make container take full width on very small screens */
   .min-h-screen > div > div {
-    width: 95% !important;
+    width: 98% !important;
     max-width: none !important;
   }
 }
@@ -59,7 +98,7 @@
 /* Better spacing for error messages on mobile */
 @media (max-width: 640px) {
   .signup-form .error-container {
-    min-height: 1rem;
+    min-height: 0.75rem;
     margin-top: 0.25rem;
   }
 }
