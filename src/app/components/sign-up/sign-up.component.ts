@@ -276,6 +276,10 @@ export class SignUpComponent implements OnInit {
       next: (response) => {
         console.log('Registration successful:', response);
         this.isSubmitting = false;
+        
+        // Clear any stored redirect URLs to ensure clean navigation flow
+        this.authService.getAndClearRedirectUrl();
+        
         // Navigate to welcome page after successful registration
         this.leaveAndNavigate('/welcome');
       },
